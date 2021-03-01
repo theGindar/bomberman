@@ -43,9 +43,9 @@ def act(self, game_state: dict) -> str:
     :return: The action to take as a string.
     """
 
-    vector_shape = state_to_features(game_state)
+    features = state_to_features(game_state)
 
-    self.logger.debug(f'shape of current_state: {vector_shape}')
+
     # todo Exploration vs exploitation
     random_prob = .1
     if self.train and random.random() < random_prob:
@@ -98,10 +98,7 @@ def state_to_features(game_state: dict) -> np.array:
 
     for coin in game_state['coins']:
         current_state[0, 5, coin[0], coin[1]] = 1
-    # For example, you could construct several channels of equal shape, ...
-    #channels = []
-    #channels.append(...)
-    # concatenate them as a feature tensor (they must have the same shape), ...
-    #stacked_channels = np.stack(channels)
-    # and return them as a vector
-    return current_state.reshape(-1).size()
+        
+    return current_state
+
+

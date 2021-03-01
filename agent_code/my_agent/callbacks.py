@@ -3,6 +3,7 @@ import pickle
 import random
 
 import numpy as np
+import torch
 
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -41,6 +42,10 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
+
+    vector_shape = state_to_features(game_state)
+
+    self.logger.debug(f'shape of current_state: {vector_shape}')
     # todo Exploration vs exploitation
     random_prob = .1
     if self.train and random.random() < random_prob:
@@ -69,11 +74,34 @@ def state_to_features(game_state: dict) -> np.array:
     # This is the dict before the game begins and after it ends
     if game_state is None:
         return None
+    
+    # convert game state to input tensor for the model
+    current_state = torch.zeros((1, 6, 17, 17))
+    current_state[0, 0] = torch.from_numpy(game_state['field'])
 
+    # set agents that can place a bomb to 1, otherwise to -1
+    if game_state['self'][2] == True: 
+        current_state[0, 1, game_state['self'][3][0], game_state['self'][3][1]] = 1
+    else:
+        current_state[0, 1, game_state['self'][3][0], game_state['self'][3][1]] = -1
+
+    for other in game_state['others']:
+        if other[2] == True:
+            current_state[0, 2, other[3][0], other[3][1]] = 1
+        else:
+            current_state[0, 2, other[3][0], other[3][1]] = -1
+
+    for bomb in game_state['bombs']:
+        current_state[0, 3, bomb[0][0], bomb[0][1]] = bomb[1]
+
+    current_state[0, 4] = torch.from_numpy(game_state['explosion_map'])
+
+    for coin in game_state['coins']:
+        current_state[0, 5, coin[0], coin[1]] = 1
     # For example, you could construct several channels of equal shape, ...
-    channels = []
-    channels.append(...)
+    #channels = []
+    #channels.append(...)
     # concatenate them as a feature tensor (they must have the same shape), ...
-    stacked_channels = np.stack(channels)
+    #stacked_channels = np.stack(channels)
     # and return them as a vector
-    return stacked_channels.reshape(-1)
+    return current_state.reshape(-1).size()

@@ -4,15 +4,31 @@ from collections import namedtuple, deque
 from typing import List
 
 import events as e
-from .callbacks import state_to_features
+from .model import Model
+#from .callbacks import state_to_features
+from .replay_memory import ReplayMemory
+import torch
+import torch.optim as optim
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # This is only an example!
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
+#Transition = namedtuple('Transition',
+#                        ('state', 'action', 'next_state', 'reward'))
 
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
-RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
+#RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
+
+BATCH_SIZE = 128
+GAMMA = 0.999
+EPS_START = 0.9
+EPS_END = 0.05
+EPS_DECAY = 200
+TARGET_UPDATE = 10
+
+policy_net = Model().to(device)
+target_net = Model().to(device)
 
 # Events
 PLACEHOLDER_EVENT = "PLACEHOLDER"
@@ -26,9 +42,23 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
+    print('setup training called')
+    self.steps_done = 0
+
+    policy_net = Model().to(device)
+    target_net = Model().to(device)
+    print(type(policy_net))
+
+    target_net.load_state_dict(policy_net.state_dict())
+    target_net.eval()
+
+    self.optimizer = optim.RMSprop(policy_net.parameters())
+    self.memory = ReplayMemory(10000)
+
     # Example: Setup an array that will note transition tuples
     # (s, a, r, s')
-    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+    
+    #self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):

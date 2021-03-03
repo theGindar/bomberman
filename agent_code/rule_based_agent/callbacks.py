@@ -63,7 +63,6 @@ def setup(self):
     You can also use the self.logger object at any time to write to the log
     file for debugging (see https://docs.python.org/3.7/library/logging.html).
     """
-    print('rulebased setup called')
     self.logger.debug('Successfully entered setup code')
     np.random.seed()
     # Fixed length FIFO queues to avoid repeating the same actions
@@ -82,7 +81,6 @@ def act(self, game_state):
     what it contains.
     """
     self.logger.info('Picking action according to rule set')
-    print('rulebased act called')
     # Gather information about the game state
     arena = game_state['field']
     _, score, bombs_left, (x, y) = game_state['self']

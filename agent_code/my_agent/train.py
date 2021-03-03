@@ -2,19 +2,25 @@ import pickle
 import random
 from collections import namedtuple, deque
 from typing import List
+import matplotlib
+import matplotlib.pyplot as plt
+import os
 
 import events as e
 from .model import Model
-#from .callbacks import state_to_features
+from .utils import state_to_features
 from .replay_memory import ReplayMemory
 import torch
 import torch.optim as optim
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import torch.nn.functional as F
+from .shared import device, EPS_START, EPS_END, EPS_DECAY
+is_ipython = 'inline' in matplotlib.get_backend()
+if is_ipython:
+    from IPython import display
 
 # This is only an example!
-#Transition = namedtuple('Transition',
-#                        ('state', 'action', 'next_state', 'reward'))
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
 
 # Hyper parameters -- DO modify
 TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
@@ -22,13 +28,20 @@ TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 
 BATCH_SIZE = 128
 GAMMA = 0.999
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 200
 TARGET_UPDATE = 10
 
-policy_net = Model().to(device)
 target_net = Model().to(device)
+policy_net = Model().to(device)
+
+if os.listdir("./agent_code/my_agent/saved_models/") != 0:
+    print('loading existing model...')
+    policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
+    policy_net.eval()
+
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+
+optimizer = optim.RMSprop(policy_net.parameters())
 
 # Events
 PLACEHOLDER_EVENT = "PLACEHOLDER"
@@ -44,10 +57,10 @@ def setup_training(self):
     """
     print('setup training called')
     self.steps_done = 0
+    self.episode_durations = []
 
-    policy_net = Model().to(device)
-    target_net = Model().to(device)
-    print(type(policy_net))
+    #policy_net = Model().to(device)
+    #target_net = Model().to(device)
 
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
@@ -58,7 +71,7 @@ def setup_training(self):
     # Example: Setup an array that will note transition tuples
     # (s, a, r, s')
     
-    #self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -78,6 +91,18 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+
+    # dummy reward
+    reward = 69
+    reward = torch.tensor([reward], device=device)
+
+    self.memory.push(old_game_state, self_action, new_game_state, reward)
+
+    optimize_model(self)
+    
+    #self.episode_durations.append(self.steps_done)
+    #plot_durations(self)
+
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
 
     # Idea: Add your own events to hand out rewards
@@ -86,6 +111,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
     # state_to_features is defined in callbacks.py
     self.transitions.append(Transition(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward_from_events(self, events)))
+    self.steps_done += 1
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -103,9 +129,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
     self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
 
+    target_net.load_state_dict(policy_net.state_dict())
+    torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
     # Store the model
-    with open("my-saved-model.pt", "wb") as file:
-        pickle.dump(self.model, file)
+    #with open("my-saved-model.pt", "wb") as file:
+    #    pickle.dump(self.model, file)
 
 
 def reward_from_events(self, events: List[str]) -> int:
@@ -126,3 +154,69 @@ def reward_from_events(self, events: List[str]) -> int:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
+
+
+def plot_durations(self):
+    plt.figure(2)
+    plt.clf()
+    durations_t = torch.tensor(self.episode_durations, dtype=torch.float)
+    plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Duration')
+    plt.plot(durations_t.numpy())
+    # Take 100 episode averages and plot them too
+    if len(durations_t) >= 100:
+        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+        means = torch.cat((torch.zeros(99), means))
+        plt.plot(means.numpy())
+
+    plt.pause(0.001)  # pause a bit so that plots are updated
+    if is_ipython:
+        display.clear_output(wait=True)
+        display.display(plt.gcf())
+
+
+def optimize_model(self):
+    print('optimizer called')
+    if len(self.memory) < BATCH_SIZE:
+        return
+    transitions = self.memory.sample(BATCH_SIZE)
+    # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
+    # detailed explanation). This converts batch-array of Transitions
+    # to Transition of batch-arrays.
+    batch = Transition(*zip(*transitions))
+
+    # Compute a mask of non-final states and concatenate the batch elements
+    # (a final state would've been the one after which simulation ended)
+    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
+                                          batch.next_state)), device=device, dtype=torch.bool)
+    non_final_next_states = torch.cat([s for s in batch.next_state
+                                                if s is not None])
+    state_batch = torch.cat(batch.state)
+    action_batch = torch.cat(batch.action)
+    reward_batch = torch.cat(batch.reward)
+
+    # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
+    # columns of actions taken. These are the actions which would've been taken
+    # for each batch state according to policy_net
+    state_action_values = policy_net(state_batch).gather(1, action_batch)
+
+    # Compute V(s_{t+1}) for all next states.
+    # Expected values of actions for non_final_next_states are computed based
+    # on the "older" target_net; selecting their best reward with max(1)[0].
+    # This is merged based on the mask, such that we'll have either the expected
+    # state value or 0 in case the state was final.
+    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
+    # Compute the expected Q values
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+
+    # Compute Huber loss
+    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+
+    # Optimize the model
+    optimizer.zero_grad()
+    loss.backward()
+    for param in policy_net.parameters():
+        param.grad.data.clamp_(-1, 1)
+    optimizer.step()

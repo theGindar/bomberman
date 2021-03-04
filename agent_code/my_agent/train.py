@@ -28,7 +28,8 @@ TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 
 BATCH_SIZE = 128
 GAMMA = 0.999
-TARGET_UPDATE = 10
+TARGET_UPDATE = 5
+NUM_EPISODES = 10
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -57,6 +58,7 @@ def setup_training(self):
     """
     print('setup training called')
     self.steps_done = 0
+    self.current_episode_num = 1
     self.episode_durations = []
 
     #policy_net = Model().to(device)
@@ -129,11 +131,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
     self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
 
-    target_net.load_state_dict(policy_net.state_dict())
-    torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
-    # Store the model
-    #with open("my-saved-model.pt", "wb") as file:
-    #    pickle.dump(self.model, file)
+    if self.current_episode_num % TARGET_UPDATE == 0:
+        print('update target_net')
+        target_net.load_state_dict(policy_net.state_dict())
+        torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
+    self.current_episode_num += 1
 
 
 def reward_from_events(self, events: List[str]) -> int:

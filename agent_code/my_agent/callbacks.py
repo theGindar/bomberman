@@ -65,7 +65,7 @@ def act(self, game_state: dict) -> str:
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
-            #print(f'action of model: {action.item()}')
+            print(f'action of model: {action}')
             
     else:
         action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)

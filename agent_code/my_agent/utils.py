@@ -17,7 +17,9 @@ def state_to_features(game_state: dict) -> np.array:
     """
     # This is the dict before the game begins and after it ends
     if game_state is None:
+        print('GAMESTATE IS NONE')
         return None
+
     
     # convert game state to input tensor for the model
     current_state = torch.zeros((1, 6, 17, 17))

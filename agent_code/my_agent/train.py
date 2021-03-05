@@ -8,18 +8,12 @@ import os
 
 import events as e
 from .model import Model
-from .utils import state_to_features
+from .utils import state_to_features, save_rewards_to_file
 from .replay_memory import ReplayMemory
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
 from .shared import device, EPS_START, EPS_END, EPS_DECAY
-from datetime import datetime
-import time
-#is_ipython = 'inline' in matplotlib.get_backend()
-#if is_ipython:
-from IPython import display
-from .plot_reward import plot_rewards
 
 plt.ion()
 
@@ -163,8 +157,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.current_episode_num += 1
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
-        plot_rewards(self)
-        time.sleep(5)
+        save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
 
 
@@ -266,3 +259,6 @@ def optimize_model(self):
     for param in policy_net.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
+
+
+

@@ -1,5 +1,7 @@
 import torch
+import pickle
 import numpy as np
+from datetime import datetime
 
 def state_to_features(game_state: dict) -> np.array:
     """
@@ -46,3 +48,9 @@ def state_to_features(game_state: dict) -> np.array:
         current_state[0, 5, coin[0], coin[1]] = 1
 
     return current_state
+
+def save_rewards_to_file(rewards_list):
+    current_datetime = datetime.now()
+    with open(f'./rewards/rewards_{str(current_datetime)}.pkl', 'wb') as f:
+       pickle.dump(rewards_list, f)
+

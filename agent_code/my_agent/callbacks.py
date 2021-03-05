@@ -4,10 +4,13 @@ import random
 
 import numpy as np
 import torch
+import math
+from .shared import device, EPS_END, EPS_START, EPS_DECAY
+from .utils import state_to_features
+from .train import policy_net
 
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
-
 
 def setup(self):
     """
@@ -23,6 +26,13 @@ def setup(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
+    self.steps_done = 0
+    if self.train:
+        print('train is true')
+        #setup_training(self)
+
+    #setup_training(self)
+    #self.policy_net = policy_net
     if self.train or not os.path.isfile("my-saved-model.pt"):
         self.logger.info("Setting up model from scratch.")
         weights = np.random.rand(len(ACTIONS))
@@ -42,63 +52,37 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
-
     features = state_to_features(game_state)
 
-
-    # todo Exploration vs exploitation
-    random_prob = .1
-    if self.train and random.random() < random_prob:
-        self.logger.debug("Choosing action purely at random.")
-        # 80%: walk in any direction. 10% wait. 10% bomb.
-        return np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
-
-    self.logger.debug("Querying model for action.")
-    return np.random.choice(ACTIONS, p=self.model)
-
-
-def state_to_features(game_state: dict) -> np.array:
-    """
-    *This is not a required function, but an idea to structure your code.*
-
-    Converts the game state to the input of your model, i.e.
-    a feature vector.
-
-    You can find out about the state of the game environment via game_state,
-    which is a dictionary. Consult 'get_state_for_agent' in environment.py to see
-    what it contains.
-
-    :param game_state:  A dictionary describing the current game board.
-    :return: np.array
-    """
-    # This is the dict before the game begins and after it ends
-    if game_state is None:
-        return None
     
-    # convert game state to input tensor for the model
-    current_state = torch.zeros((1, 6, 17, 17))
-    current_state[0, 0] = torch.from_numpy(game_state['field'])
-
-    # set agents that can place a bomb to 1, otherwise to -1
-    if game_state['self'][2] == True: 
-        current_state[0, 1, game_state['self'][3][0], game_state['self'][3][1]] = 1
+    sample = random.random()
+    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+        math.exp(-1. * self.steps_done / EPS_DECAY)
+    self.steps_done += 1
+    if sample > eps_threshold:
+        with torch.no_grad():
+            # t.max(1) will return largest column value of each row.
+            # second column on max result is index of where max element was
+            # found, so we pick action with the larger expected reward.
+            action = policy_net(features).max(1)[1].view(1, 1)
+            print(f'action of model: {action}')
+            
     else:
-        current_state[0, 1, game_state['self'][3][0], game_state['self'][3][1]] = -1
+        action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
 
-    for other in game_state['others']:
-        if other[2] == True:
-            current_state[0, 2, other[3][0], other[3][1]] = 1
-        else:
-            current_state[0, 2, other[3][0], other[3][1]] = -1
+    
+    print(f'action chosen: {action.item()}')
+    # todo Exploration vs exploitation
+    #random_prob = .1
+    #if self.train and random.random() < random_prob:
+    #    self.logger.debug("Choosing action purely at random.")
+    #    # 80%: walk in any direction. 10% wait. 10% bomb.
+    #    return np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
 
-    for bomb in game_state['bombs']:
-        current_state[0, 3, bomb[0][0], bomb[0][1]] = bomb[1]
+    #self.logger.debug("Querying model for action.")
+    #return np.random.choice(ACTIONS, p=self.model)
+    return ACTIONS[action.item()]
 
-    current_state[0, 4] = torch.from_numpy(game_state['explosion_map'])
 
-    for coin in game_state['coins']:
-        current_state[0, 5, coin[0], coin[1]] = 1
-        
-    return current_state
 
 

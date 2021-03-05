@@ -29,13 +29,13 @@ ACTIONS = { 'UP': 0,
             'BOMB': 5}
 
 # Hyper parameters -- DO modify
-TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
+#TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
 BATCH_SIZE = 32
 GAMMA = 0.999
-TARGET_UPDATE = 5
-NUM_EPISODES = 20
+TARGET_UPDATE = 10
+NUM_EPISODES = 200
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -153,10 +153,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         #pass
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
-        #torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
     self.current_episode_num += 1
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
+        torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
 
@@ -169,15 +169,15 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.COIN_COLLECTED: 2,
+        e.COIN_COLLECTED: 200,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: -2,
-        e.MOVED_DOWN: -.1,
-        e.MOVED_LEFT: -.1,
-        e.MOVED_RIGHT: -.1,
-        e.MOVED_UP: -.1,
-        e.WAITED: -.2,
-        e.KILLED_SELF: -10
+        #e.INVALID_ACTION: -1,
+        #e.MOVED_DOWN: .5,
+        #e.MOVED_LEFT: .5,
+        #e.MOVED_RIGHT: .5,
+        #e.MOVED_UP: .5,
+        #e.WAITED: -1,
+        e.KILLED_SELF: -50
         #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
     reward_sum = 0
@@ -209,7 +209,6 @@ def plot_durations(self):
 
 
 def optimize_model(self):
-    print('optimizer called')
     if len(self.memory) <= BATCH_SIZE:
         return
     transitions = self.memory.sample(BATCH_SIZE)

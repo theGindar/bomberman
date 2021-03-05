@@ -11,6 +11,7 @@ from .train import policy_net
 
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
+ACTION_NUMBERS = [0,1,2,3,4,5]
 
 def setup(self):
     """
@@ -65,13 +66,14 @@ def act(self, game_state: dict) -> str:
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
-            print(f'action of model: {action}')
+            #print(f'action of model: {action}')
             
     else:
-        action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
+        # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
     
-    print(f'action chosen: {action.item()}')
+    #print(f'action chosen: {action.item()}')
     # todo Exploration vs exploitation
     #random_prob = .1
     #if self.train and random.random() < random_prob:

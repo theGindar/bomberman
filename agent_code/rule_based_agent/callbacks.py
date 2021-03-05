@@ -81,7 +81,6 @@ def act(self, game_state):
     what it contains.
     """
     self.logger.info('Picking action according to rule set')
-
     # Gather information about the game state
     arena = game_state['field']
     _, score, bombs_left, (x, y) = game_state['self']

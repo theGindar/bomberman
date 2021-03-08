@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 
 import events as e
-from .model import Model
+from .model_deprecated import Model
 from .utils import state_to_features, save_rewards_to_file
 from .replay_memory import ReplayMemory
 import torch
@@ -35,7 +35,16 @@ ACTIONS = { 'UP': 0,
 BATCH_SIZE = 32
 GAMMA = 0.999
 TARGET_UPDATE = 5
-NUM_EPISODES = 20
+NUM_EPISODES = 10
+
+#self.number_of_actions = 2
+#self.gamma = 0.99
+#self.final_epsilon = 0.0001
+#self.initial_epsilon = 0.1
+#self.number_of_iterations = 2000000
+#self.replay_memory_size = 10000
+#self.minibatch_size = 32
+
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -106,7 +115,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
         self.memory.push(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward)
-
+        
     self.old_game_state = old_game_state
     optimize_model(self)
     
@@ -170,12 +179,13 @@ def reward_from_events(self, events: List[str]) -> int:
     game_rewards = {
         e.COIN_COLLECTED: 200,
         e.KILLED_OPPONENT: 5,
-        #e.INVALID_ACTION: -1,
-        #e.MOVED_DOWN: .5,
-        #e.MOVED_LEFT: .5,
-        #e.MOVED_RIGHT: .5,
-        #e.MOVED_UP: .5,
-        #e.WAITED: -1,
+        e.INVALID_ACTION: -1,
+        e.MOVED_DOWN: -.1,
+        e.MOVED_LEFT: -.1,
+        e.MOVED_RIGHT: -.1,
+        e.MOVED_UP: -.1,
+        e.WAITED: -.1,
+        e.BOMB_DROPPED: -5,
         e.KILLED_SELF: -50
         #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
@@ -210,7 +220,7 @@ def plot_durations(self):
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:
         return
-    transitions = self.memory.sample_connected_timeseries(BATCH_SIZE)
+    transitions = self.memory.sample(BATCH_SIZE)
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
     # to Transition of batch-arrays.

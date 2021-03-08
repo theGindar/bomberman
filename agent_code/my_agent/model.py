@@ -3,22 +3,31 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-
 class Model(nn.Module):
 
     def __init__(self):
         super(Model, self).__init__()
-        self.conv_layer1 = nn.Conv2d(6, 32, kernel_size=2, stride=1)
-        self.conv_layer2 = nn.Conv2d(32, 64, kernel_size=2, stride=2)
-        self.conv_layer3 = nn.Conv2d(64, 64, kernel_size=2, stride=1)
-        self.dense_layer4 = nn.Linear(7 * 7 * 64, 512)
-        self.dense_layer5 = nn.Linear(512, 6)
 
-    # Called with either one element to determine next action, or a batch
-    # during optimization. Returns tensor([[left0exp,right0exp]...]).
+        self.conv1 = nn.Conv2d(6, 32, 2, 4)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(32, 64, 2, 2)
+        self.relu2 = nn.ReLU(inplace=True)
+        self.conv3 = nn.Conv2d(64, 64, 2, 1)
+        self.relu3 = nn.ReLU(inplace=True)
+        self.fc4 = nn.Linear(7*7*64, 512)
+        self.relu4 = nn.ReLU(inplace=True)
+        self.fc5 = nn.Linear(512, 6)
+
     def forward(self, x):
-        x = F.relu(self.conv_layer1(x))
-        x = F.relu(self.conv_layer2(x))
-        x = F.relu(self.conv_layer3(x))
-        x = F.relu(self.dense_layer4(x.view(x.size(0), -1)))
-        return self.dense_layer5(x)
+        out = self.conv1(x)
+        out = self.relu1(out)
+        out = self.conv2(out)
+        out = self.relu2(out)
+        out = self.conv3(out)
+        out = self.relu3(out)
+        out = out.view(out.size()[0], -1)
+        out = self.fc4(out)
+        out = self.relu4(out)
+        out = self.fc5(out)
+
+        return out

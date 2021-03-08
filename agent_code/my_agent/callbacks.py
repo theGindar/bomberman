@@ -71,8 +71,8 @@ def act(self, game_state: dict) -> str:
     else:
         # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
         action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        #action = policy_net(features).max(1)[1].view(1, 1)
 
-    
     #print(f'action chosen: {action.item()}')
     # todo Exploration vs exploitation
     #random_prob = .1

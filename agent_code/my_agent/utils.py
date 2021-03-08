@@ -19,7 +19,6 @@ def state_to_features(game_state: dict) -> np.array:
     """
     # This is the dict before the game begins and after it ends
     if game_state is None:
-        print('GAMESTATE IS NONE')
         return None
 
     

@@ -70,7 +70,7 @@ def act(self, game_state: dict) -> str:
             
     else:
         # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
 
     
     #print(f'action chosen: {action.item()}')

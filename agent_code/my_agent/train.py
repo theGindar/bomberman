@@ -34,13 +34,13 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 32
 GAMMA = 0.999
-TARGET_UPDATE = 10
-NUM_EPISODES = 200
+TARGET_UPDATE = 20
+NUM_EPISODES = 1000
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if os.listdir("./agent_code/my_agent/saved_models/") != 0:
+if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
     print('loading existing model...')
     policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
     policy_net.eval()
@@ -106,8 +106,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
         self.memory.push(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward)
-    else:
-        print('skippend state because old game state was None')
+        
     self.old_game_state = old_game_state
     optimize_model(self)
     

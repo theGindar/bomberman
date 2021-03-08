@@ -34,8 +34,8 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 32
 GAMMA = 0.999
-TARGET_UPDATE = 20
-NUM_EPISODES = 1000
+TARGET_UPDATE = 5
+NUM_EPISODES = 20
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -106,7 +106,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
         self.memory.push(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward)
-        
+
     self.old_game_state = old_game_state
     optimize_model(self)
     
@@ -210,7 +210,7 @@ def plot_durations(self):
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:
         return
-    transitions = self.memory.sample(BATCH_SIZE)
+    transitions = self.memory.sample_connected_timeseries(BATCH_SIZE)
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
     # to Transition of batch-arrays.

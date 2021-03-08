@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 
 import events as e
-from .model_deprecated import Model
+from .model import Model
 from .utils import state_to_features, save_rewards_to_file
 from .replay_memory import ReplayMemory
 import torch
@@ -32,7 +32,7 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 GAMMA = 0.999
 TARGET_UPDATE = 5
 NUM_EPISODES = 10
@@ -130,7 +130,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
     # state_to_features is defined in callbacks.py
     #self.transitions.append(Transition(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward_from_events(self, events)))
-    self.steps_done += 1
+    #self.steps_done += 1
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -145,13 +145,13 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
-    reward = reward_from_events(self, events)
-    self.total_reward += reward
-    self.total_reward_tensor = torch.tensor([self.total_reward], device=device)
+    #reward = reward_from_events(self, events)
+    #self.total_reward += reward
+    #self.total_reward_tensor = torch.tensor([self.total_reward], device=device)
 
-    self.memory.push(state_to_features(self.old_game_state), last_action, state_to_features(last_game_state), self.total_reward_tensor)
+    #self.memory.push(state_to_features(self.old_game_state), last_action, state_to_features(last_game_state), self.total_reward_tensor)
 
-    optimize_model(self)
+    #optimize_model(self)
 
 
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
@@ -179,12 +179,12 @@ def reward_from_events(self, events: List[str]) -> int:
     game_rewards = {
         e.COIN_COLLECTED: 200,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: -1,
-        e.MOVED_DOWN: -.1,
-        e.MOVED_LEFT: -.1,
-        e.MOVED_RIGHT: -.1,
-        e.MOVED_UP: -.1,
-        e.WAITED: -.1,
+        e.INVALID_ACTION: 0,
+        e.MOVED_DOWN: 0,
+        e.MOVED_LEFT: 0,
+        e.MOVED_RIGHT: 0,
+        e.MOVED_UP: 0,
+        e.WAITED: -3,
         e.BOMB_DROPPED: -5,
         e.KILLED_SELF: -50
         #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
@@ -237,6 +237,7 @@ def optimize_model(self):
     state_batch = torch.cat(batch.state)
 
     reward_batch = torch.cat(batch.reward)
+    
     action_list = []
     for idx, i in enumerate(batch.action):
         action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]]))

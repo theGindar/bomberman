@@ -8,7 +8,7 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
 
-        self.conv1 = nn.Conv2d(6, 32, 2, 4)
+        self.conv1 = nn.Conv2d(6, 32, 2, 1)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(32, 64, 2, 2)
         self.relu2 = nn.ReLU(inplace=True)

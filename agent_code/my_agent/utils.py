@@ -45,7 +45,6 @@ def state_to_features(game_state: dict) -> np.array:
 
     for coin in game_state['coins']:
         current_state[0, 5, coin[0], coin[1]] = 1
-    print(current_state[0, 5])
     return current_state
 
 def save_rewards_to_file(rewards_list):

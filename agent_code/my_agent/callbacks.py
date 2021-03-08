@@ -34,15 +34,6 @@ def setup(self):
 
     #setup_training(self)
     #self.policy_net = policy_net
-    if self.train or not os.path.isfile("my-saved-model.pt"):
-        self.logger.info("Setting up model from scratch.")
-        weights = np.random.rand(len(ACTIONS))
-        self.model = weights / weights.sum()
-    else:
-        self.logger.info("Loading model from saved state.")
-        with open("my-saved-model.pt", "rb") as file:
-            self.model = pickle.load(file)
-
 
 def act(self, game_state: dict) -> str:
     """
@@ -66,13 +57,21 @@ def act(self, game_state: dict) -> str:
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
-            #print(f'action of model: {action}')
+            print(f'action chosen: {action}')
+            
             
     else:
         # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .])]], device=device, dtype=torch.long)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+
         #action = policy_net(features).max(1)[1].view(1, 1)
 
+    #print(f'steps done: {self.steps_done}')
+    
+    
+    
     #print(f'action chosen: {action.item()}')
     # todo Exploration vs exploitation
     #random_prob = .1
@@ -83,6 +82,8 @@ def act(self, game_state: dict) -> str:
 
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
+    if self.steps_done == 400:
+        self.steps_done = 0
     return ACTIONS[action.item()]
 
 

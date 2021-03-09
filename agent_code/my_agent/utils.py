@@ -1,7 +1,7 @@
 import torch
 import pickle
 import numpy as np
-from datetime import datetime
+import uuid
 
 def state_to_features(game_state: dict) -> np.array:
     """
@@ -19,7 +19,6 @@ def state_to_features(game_state: dict) -> np.array:
     """
     # This is the dict before the game begins and after it ends
     if game_state is None:
-        print('GAMESTATE IS NONE')
         return None
 
     
@@ -46,11 +45,9 @@ def state_to_features(game_state: dict) -> np.array:
 
     for coin in game_state['coins']:
         current_state[0, 5, coin[0], coin[1]] = 1
-
     return current_state
 
 def save_rewards_to_file(rewards_list):
-    current_datetime = datetime.now()
-    with open(f'./rewards/rewards_{str(current_datetime)}.pkl', 'wb') as f:
+    with open(f'./rewards/{uuid.uuid1()}.pkl', 'wb') as f:
        pickle.dump(rewards_list, f)
 

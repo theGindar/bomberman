@@ -11,6 +11,7 @@ from .train import policy_net
 
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
+ACTION_NUMBERS = [0,1,2,3,4,5]
 
 def setup(self):
     """
@@ -33,15 +34,6 @@ def setup(self):
 
     #setup_training(self)
     #self.policy_net = policy_net
-    if self.train or not os.path.isfile("my-saved-model.pt"):
-        self.logger.info("Setting up model from scratch.")
-        weights = np.random.rand(len(ACTIONS))
-        self.model = weights / weights.sum()
-    else:
-        self.logger.info("Loading model from saved state.")
-        with open("my-saved-model.pt", "rb") as file:
-            self.model = pickle.load(file)
-
 
 def act(self, game_state: dict) -> str:
     """
@@ -59,19 +51,30 @@ def act(self, game_state: dict) -> str:
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
+    
     if sample > eps_threshold:
         with torch.no_grad():
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
-            print(f'action of model: {action}')
+            
+            print(f'action chosen: {action}')
+            
             
     else:
-        action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
+        # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
+        
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
+        #action = policy_net(features).max(1)[1].view(1, 1)
+
+    #print(f'steps done: {self.steps_done}')
     
-    print(f'action chosen: {action.item()}')
+    
+    
+    #print(f'action chosen: {action.item()}')
     # todo Exploration vs exploitation
     #random_prob = .1
     #if self.train and random.random() < random_prob:
@@ -81,6 +84,8 @@ def act(self, game_state: dict) -> str:
 
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
+    if self.steps_done == 400:
+        self.steps_done = 0
     return ACTIONS[action.item()]
 
 

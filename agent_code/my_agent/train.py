@@ -32,10 +32,10 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 GAMMA = 0.999
-TARGET_UPDATE = 5
-NUM_EPISODES = 10
+TARGET_UPDATE = 10
+NUM_EPISODES = 200
 
 #self.number_of_actions = 2
 #self.gamma = 0.99
@@ -84,7 +84,7 @@ def setup_training(self):
     #target_net.eval()
 
     self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(10000)
+    self.memory = ReplayMemory(400)
     self.total_reward_history = []
 
     # Example: Setup an array that will note transition tuples
@@ -177,15 +177,15 @@ def reward_from_events(self, events: List[str]) -> int:
     certain behavior.
     """
     game_rewards = {
-        e.COIN_COLLECTED: 200,
+        e.COIN_COLLECTED: 50,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: 0,
+        e.INVALID_ACTION: -2,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
         e.WAITED: -3,
-        e.BOMB_DROPPED: -5,
+        e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -50
         #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
@@ -237,7 +237,7 @@ def optimize_model(self):
     state_batch = torch.cat(batch.state)
 
     reward_batch = torch.cat(batch.reward)
-    
+
     action_list = []
     for idx, i in enumerate(batch.action):
         action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]]))

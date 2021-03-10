@@ -70,7 +70,7 @@ def act(self, game_state: dict) -> str:
         
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
-        #action = policy_net(features).max(1)[1].view(1, 1)
+        #action = policy_net(features.to(device)).max(1)[1].view(1, 1)
 
     #print(f'steps done: {self.steps_done}')
     

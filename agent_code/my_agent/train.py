@@ -2,8 +2,6 @@ import pickle
 import random
 from collections import namedtuple, deque
 from typing import List
-import matplotlib
-import matplotlib.pyplot as plt
 import os
 import numpy as np
 
@@ -16,7 +14,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 from .shared import device, EPS_START, EPS_END, EPS_DECAY
 
-plt.ion()
 
 # This is only an example!
 Transition = namedtuple('Transition',

@@ -116,7 +116,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     self.total_reward += reward
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
-        self.memory.push(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward)
+        self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
         
     self.old_game_state = old_game_state
     optimize_model(self)

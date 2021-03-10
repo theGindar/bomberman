@@ -51,7 +51,7 @@ def act(self, game_state: dict) -> str:
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
-    
+
     if sample > eps_threshold:
         with torch.no_grad():
             # t.max(1) will return largest column value of each row.
@@ -59,13 +59,15 @@ def act(self, game_state: dict) -> str:
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
             
-            print(f'action chosen: {action}')
+            #print(f'action chosen: {action}')
+
             
             
     else:
         # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
-        
+        #action = policy_net(features).max(1)[1].view(1, 1)
         action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
         #action = policy_net(features).max(1)[1].view(1, 1)

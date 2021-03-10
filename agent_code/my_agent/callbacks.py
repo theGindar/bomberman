@@ -59,7 +59,7 @@ def act(self, game_state: dict) -> str:
             # found, so we pick action with the larger expected reward.
             action = policy_net(features).max(1)[1].view(1, 1)
             
-            print(f'action chosen: {action}')
+            #print(f'action chosen: {action}')
 
             
             

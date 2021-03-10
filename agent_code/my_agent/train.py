@@ -33,10 +33,10 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
 
-BATCH_SIZE = 16
+BATCH_SIZE = 256
 GAMMA = 0.999
-TARGET_UPDATE = 5
-NUM_EPISODES = 20
+TARGET_UPDATE = 20
+NUM_EPISODES = 500
 LEARNING_RATE = 0.0001
 
 #self.number_of_actions = 2
@@ -87,7 +87,7 @@ def setup_training(self):
     #target_net.eval()
 
     self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(400)
+    self.memory = ReplayMemory(10000)
     self.total_reward_history = []
 
     # Example: Setup an array that will note transition tuples
@@ -173,6 +173,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
 
+    print(f'finished episode {self.current_episode_num}')
+
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:
     """
@@ -185,16 +187,16 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 500,
+        e.COIN_COLLECTED: 3000,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: -2,
+        e.INVALID_ACTION: -20,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: -3,
+        e.WAITED: -30,
         e.BOMB_DROPPED: 0,
-        e.KILLED_SELF: -50
+        e.KILLED_SELF: -500
         #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
 
@@ -204,7 +206,8 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
-    reward_sum += int(5 - distance_coin*5)
+    reward_sum += int(100 - distance_coin*100)
+    # print(f'reward distance: {int(100 - distance_coin*100)}')
     return reward_sum
 
 

@@ -251,7 +251,7 @@ def optimize_model(self):
 
     action_list = []
     for idx, i in enumerate(batch.action):
-        action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]]))
+        action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]], device=device))
     
     action_batch = torch.cat(action_list)
 

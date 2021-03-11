@@ -1,7 +1,6 @@
 import torch
 import pickle
 import numpy as np
-import uuid
 
 def state_to_features(game_state: dict) -> np.array:
     """
@@ -48,6 +47,6 @@ def state_to_features(game_state: dict) -> np.array:
     return current_state
 
 def save_rewards_to_file(rewards_list):
-    with open(f'./rewards/{uuid.uuid1()}.pkl', 'wb') as f:
+    with open(f'./rewards/rewards.pkl', 'wb') as f:
        pickle.dump(rewards_list, f)
 

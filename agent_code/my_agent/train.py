@@ -95,10 +95,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
 
     min_coin_distance = calc_coin_distance(new_game_state)
-    reward = reward_from_events(self, events, min_coin_distance)
-
     if calc_position_change(self, new_game_state):
         events.append('REPEATS_STEPS')
+    reward = reward_from_events(self, events, min_coin_distance)
+
+    
     self.total_reward += reward
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
@@ -148,7 +149,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
 
-    print(f'Positions: {len(self.positions)}')
+    #print(f'Positions: {len(self.positions)}')
     self.positions = []
     #print(f'finished episode {self.current_episode_num}')
 
@@ -218,12 +219,19 @@ def calc_position_change(self, game_state: dict):
     current_position = game_state['self'][3]
     repeats = False
     #print(f'Current Position: {current_position}')
-    if len(self.positions) > 2:
-        for i in range(3):
-            print(f'Last three positions {self.positions[self.steps_done-1-i]}')
-            if current_position == self.positions[self.steps_done-1-i]:
-                repeats = True
-    return repeats
+    while len(self.positions) > 3:
+        self.positions.pop(0)
+
+        if current_position in self.positions:
+            return True
+        else:
+            return False
+
+        #for i in range(3):
+            #print(f'Last three positions {self.positions[self.steps_done-1-i]}')
+        #    if current_position == self.positions[self.steps_done-1-i]:
+        #        repeats = True
+    #return repeats
 
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:

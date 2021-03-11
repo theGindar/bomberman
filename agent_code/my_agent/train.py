@@ -154,7 +154,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 3000,
+        e.COIN_COLLECTED: 5000,
         e.KILLED_OPPONENT: 5,
         e.INVALID_ACTION: -20,
         e.MOVED_DOWN: 0,

@@ -69,7 +69,7 @@ def setup_training(self):
     self.episode_durations = []
     self.total_reward = 0
 
-    self.optimizer = optim.RMSprop(policy_net.parameters())
+    #self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(10000)
     self.total_reward_history = []
 
@@ -173,7 +173,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    print(f'reward distance: {int(100 - distance_coin*100)}')
+    # print(f'reward distance: {int(100 - distance_coin*100)}')
     return reward_sum
 
 

@@ -134,13 +134,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
     self.current_episode_num += 1
+    print(f'finished episode {self.current_episode_num}')
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
-
-    print(f'finished episode {self.current_episode_num}')
 
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:

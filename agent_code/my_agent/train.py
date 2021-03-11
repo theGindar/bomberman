@@ -94,11 +94,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
 
-    if calc_position_change(self, new_game_state):
-        events.append('REPEATS_STEPS')
     min_coin_distance = calc_coin_distance(new_game_state)
     reward = reward_from_events(self, events, min_coin_distance)
 
+    if calc_position_change(self, new_game_state):
+        events.append('REPEATS_STEPS')
     self.total_reward += reward
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:

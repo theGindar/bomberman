@@ -32,17 +32,17 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 256
 GAMMA = 0.999
-TARGET_UPDATE = 20
-NUM_EPISODES = 500
+TARGET_UPDATE = 5
+NUM_EPISODES = 10
 LEARNING_RATE = 0.0001
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
+if len(os.listdir("./agent_code/my_agent/saved_models")) == 0:
     print('loading existing model...')
-    #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
-    policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
+    policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
+    #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
     policy_net.eval()
 
 target_net.load_state_dict(policy_net.state_dict())
@@ -72,6 +72,7 @@ def setup_training(self):
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(10000)
     self.total_reward_history = []
+    self.positions = []
 
 
 
@@ -92,6 +93,9 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+
+    if calc_position_change(self, new_game_state):
+        events.append('REPEATS_STEPS')
     min_coin_distance = calc_coin_distance(new_game_state)
     reward = reward_from_events(self, events, min_coin_distance)
 
@@ -99,7 +103,10 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
         self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
-        
+
+    #print(new_game_state['self'][3])
+    self.positions.append(new_game_state['self'][3])
+
     self.old_game_state = old_game_state
     optimize_model(self)
 
@@ -141,6 +148,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         save_rewards_to_file(self.total_reward_history)
     self.total_reward = 0
 
+    print(f'Positions: {len(self.positions)}')
+    self.positions = []
+    #print(f'finished episode {self.current_episode_num}')
+
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:
     """
@@ -162,7 +173,8 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.MOVED_UP: 0,
         e.WAITED: -30,
         e.BOMB_DROPPED: 0,
-        e.KILLED_SELF: -500
+        e.KILLED_SELF: -500,
+        e.REPEATS_STEPS: -15
     }
 
     reward_sum = 0
@@ -172,7 +184,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    # print(f'reward distance: {int(100 - distance_coin*100)}')
+    #print(f'reward distance: {int(100 - distance_coin*100)}')
     return reward_sum
 
 
@@ -193,8 +205,23 @@ def calc_coin_distance(game_state: dict):
     # normalize to a value between 0 and 1
     return (min_coin_distance - min_distance) / (max_distance - min_distance)
 
-    
+def calc_position_change(self, game_state: dict):
+    """
+    current_position = position for respective step
+    positions = List with all positions for each step (x,y tuple)
 
+    Compare if one of the last three positions is the same as the current position (the agent repeats its steps).
+    If so: Set true and therefore give a negative reward.
+    """
+    current_position = game_state['self'][3]
+    repeats = False
+    print(f'Current Position: {current_position}')
+    if len(self.positions) > 2:
+        for i in range(3):
+            print(f'Last three positions {self.positions[self.steps_done-1-i]}')
+            if current_position == self.positions[self.steps_done-1-i]:
+                repeats = True
+    return repeats
 
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:

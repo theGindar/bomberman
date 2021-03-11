@@ -28,7 +28,7 @@ ACTIONS = { 'UP': 0,
 
 # Hyper parameters -- DO modify
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
-#RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...
+#RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
 BATCH_SIZE = 256
 GAMMA = 0.999
@@ -36,20 +36,12 @@ TARGET_UPDATE = 20
 NUM_EPISODES = 500
 LEARNING_RATE = 0.0001
 
-#self.number_of_actions = 2
-#self.gamma = 0.99
-#self.final_epsilon = 0.0001
-#self.initial_epsilon = 0.1
-#self.number_of_iterations = 2000000
-#self.replay_memory_size = 10000
-#self.minibatch_size = 32
-
-
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
 if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
     print('loading existing model...')
+    #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
     policy_net.eval()
 
@@ -77,20 +69,10 @@ def setup_training(self):
     self.episode_durations = []
     self.total_reward = 0
 
-    #policy_net = Model().to(device)
-    #target_net = Model().to(device)
-
-    #target_net.load_state_dict(policy_net.state_dict())
-    #target_net.eval()
-
     self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(10000)
     self.total_reward_history = []
 
-    # Example: Setup an array that will note transition tuples
-    # (s, a, r, s')
-    
-    #self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -116,23 +98,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     self.total_reward += reward
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
-        self.memory.push(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward)
+        self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
         
     self.old_game_state = old_game_state
     optimize_model(self)
-    
-    #self.episode_durations.append(self.steps_done)
-    #plot_durations(self)
 
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
-    
-    # Idea: Add your own events to hand out rewards
-    #if ...:
-    #    events.append(PLACEHOLDER_EVENT)
-
-    # state_to_features is defined in callbacks.py
-    #self.transitions.append(Transition(state_to_features(old_game_state), self_action, state_to_features(new_game_state), reward_from_events(self, events)))
-    #self.steps_done += 1
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -160,7 +131,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     #self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
 
     if self.current_episode_num % TARGET_UPDATE == 0:
-        #pass
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
     self.current_episode_num += 1
@@ -184,7 +154,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 3000,
+        e.COIN_COLLECTED: 5000,
         e.KILLED_OPPONENT: 5,
         e.INVALID_ACTION: -20,
         e.MOVED_DOWN: 0,
@@ -194,7 +164,6 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.WAITED: -30,
         e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -500
-        #PLACEHOLDER_EVENT: -.1  # idea: the custom event is bad
     }
 
     reward_sum = 0
@@ -204,7 +173,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    # print(f'reward distance: {int(100 - distance_coin*100)}')
+    print(f'reward distance: {int(100 - distance_coin*100)}')
     return reward_sum
 
 
@@ -232,9 +201,6 @@ def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:
         return
     transitions = self.memory.sample(BATCH_SIZE)
-    # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
-    # detailed explanation). This converts batch-array of Transitions
-    # to Transition of batch-arrays.
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
@@ -251,7 +217,7 @@ def optimize_model(self):
 
     action_list = []
     for idx, i in enumerate(batch.action):
-        action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]]))
+        action_list.append(torch.tensor([[ACTIONS[batch.action[idx]]]], device=device))
     
     action_batch = torch.cat(action_list)
 

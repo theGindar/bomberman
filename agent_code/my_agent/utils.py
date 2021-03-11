@@ -1,6 +1,7 @@
 import torch
 import pickle
 import numpy as np
+from .shared import device
 
 def state_to_features(game_state: dict) -> np.array:
     """
@@ -23,7 +24,7 @@ def state_to_features(game_state: dict) -> np.array:
     
     # convert game state to input tensor for the model
     current_state = torch.zeros((1, 6, 17, 17))
-    current_state[0, 0] = torch.from_numpy(game_state['field'])
+    current_state[0, 0] = torch.from_numpy(game_state['field']).to(device)
 
     # set agents that can place a bomb to 1, otherwise to -1
     if game_state['self'][2] == True: 
@@ -40,7 +41,7 @@ def state_to_features(game_state: dict) -> np.array:
     for bomb in game_state['bombs']:
         current_state[0, 3, bomb[0][0], bomb[0][1]] = bomb[1]
 
-    current_state[0, 4] = torch.from_numpy(game_state['explosion_map'])
+    current_state[0, 4] = torch.from_numpy(game_state['explosion_map']).to(device)
 
     for coin in game_state['coins']:
         current_state[0, 5, coin[0], coin[1]] = 1

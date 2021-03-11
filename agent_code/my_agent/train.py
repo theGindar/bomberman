@@ -176,7 +176,9 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.KILLED_SELF: -500,
         e.REPEATS_STEPS: -15
     }
-
+    for i in events:
+        if i == e.REPEATS_STEPS:
+            print("step repeated!")
     reward_sum = 0
     for event in events:
         if event in game_rewards:
@@ -184,7 +186,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    #print(f'reward distance: {int(100 - distance_coin*100)}')
+    #print(f'reward: {reward_sum}')
     return reward_sum
 
 
@@ -215,7 +217,7 @@ def calc_position_change(self, game_state: dict):
     """
     current_position = game_state['self'][3]
     repeats = False
-    print(f'Current Position: {current_position}')
+    #print(f'Current Position: {current_position}')
     if len(self.positions) > 2:
         for i in range(3):
             print(f'Last three positions {self.positions[self.steps_done-1-i]}')

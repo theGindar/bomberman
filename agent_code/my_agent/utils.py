@@ -47,7 +47,13 @@ def state_to_features(game_state: dict) -> np.array:
         current_state[0, 5, coin[0], coin[1]] = 1
     return current_state
 
+
 def save_rewards_to_file(rewards_list):
     with open(f'./rewards/rewards.pkl', 'wb') as f:
        pickle.dump(rewards_list, f)
+
+
+def save_loss_to_file(loss_list):
+    with open(f'./rewards/loss.pkl', 'wb') as f:
+       pickle.dump(loss_list, f)
 

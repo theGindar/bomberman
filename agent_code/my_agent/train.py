@@ -31,7 +31,7 @@ ACTIONS = { 'UP': 0,
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
 BATCH_SIZE = 64
-GAMMA = 0.999
+GAMMA = 0.99
 TARGET_UPDATE = 10
 NUM_EPISODES = 200
 LEARNING_RATE = 0.0001

@@ -30,7 +30,7 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 GAMMA = 0.999
 TARGET_UPDATE = 10
 NUM_EPISODES = 200
@@ -69,7 +69,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(10000)
+    self.memory = ReplayMemory(300000)
     self.total_reward_history = []
     self.loss_history = []
     self.positions = []

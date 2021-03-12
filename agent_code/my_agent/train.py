@@ -7,7 +7,7 @@ import numpy as np
 
 import events as e
 from .model import Model
-from .utils import state_to_features, save_rewards_to_file
+from .utils import state_to_features, save_rewards_to_file, save_loss_to_file
 from .replay_memory import ReplayMemory
 import torch
 import torch.optim as optim

@@ -95,8 +95,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
 
     min_coin_distance = calc_coin_distance(new_game_state)
-    if calc_position_change(self, new_game_state):
-        events.append('REPEATS_STEPS')
+    #if calc_position_change(self, new_game_state):
+    #    events.append('REPEATS_STEPS')
+    if calc_is_new_position(self, new_game_state):
+        events.append('NEW_POSITION_EXPLORED')
+
     reward = reward_from_events(self, events, min_coin_distance)
 
     
@@ -175,7 +178,8 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.WAITED: -30,
         e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -500,
-        e.REPEATS_STEPS: -15
+        e.REPEATS_STEPS: -15,
+        e.NEW_POSITION_EXPLORED: 15
     }
     for i in events:
         if i == e.REPEATS_STEPS:
@@ -217,7 +221,6 @@ def calc_position_change(self, game_state: dict):
     If so: Set true and therefore give a negative reward.
     """
     current_position = game_state['self'][3]
-    repeats = False
     #print(f'Current Position: {current_position}')
     while len(self.positions) > 3:
         self.positions.pop(0)
@@ -227,11 +230,16 @@ def calc_position_change(self, game_state: dict):
         else:
             return False
 
-        #for i in range(3):
-            #print(f'Last three positions {self.positions[self.steps_done-1-i]}')
-        #    if current_position == self.positions[self.steps_done-1-i]:
-        #        repeats = True
-    #return repeats
+def calc_is_new_position(self, game_state: dict):
+    """
+    return True, if the current position of the agent was not explored before
+    """
+    current_position = game_state['self'][3]
+    if current_position in self.positions:
+        return False
+    else:
+        return True
+
 
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:

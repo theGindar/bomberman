@@ -66,12 +66,12 @@ def setup_training(self):
     print('setup training called')
     self.steps_done = 0
     self.current_episode_num = 1
-    self.episode_durations = []
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(10000)
     self.total_reward_history = []
+    self.loss_history = []
     self.positions = []
 
 
@@ -108,7 +108,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if  state_to_features(old_game_state) != None:
         self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
 
-    #print(new_game_state['self'][3])
     self.positions.append(new_game_state['self'][3])
 
     self.old_game_state = old_game_state
@@ -144,12 +143,15 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     if self.current_episode_num % TARGET_UPDATE == 0:
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
-    self.current_episode_num += 1
+
     print(f'finished episode {self.current_episode_num}')
+    self.current_episode_num += 1
+    
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
+        save_loss_to_file(self.loss_history)
     self.total_reward = 0
 
     #print(f'Positions: {len(self.positions)}')
@@ -168,18 +170,18 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 5000,
+        e.COIN_COLLECTED: 7000,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: -20,
+        e.INVALID_ACTION: -35,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: -30,
+        e.WAITED: -50,
         e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -500,
         e.REPEATS_STEPS: -15,
-        e.NEW_POSITION_EXPLORED: 15
+        e.NEW_POSITION_EXPLORED: 20
     }
     for i in events:
         if i == e.REPEATS_STEPS:
@@ -191,7 +193,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    #print(f'reward: {reward_sum}')
+    print(f'reward: {reward_sum}')
     return reward_sum
 
 
@@ -236,6 +238,7 @@ def calc_is_new_position(self, game_state: dict):
     """
     current_position = game_state['self'][3]
     if current_position in self.positions:
+        print('wiederholt!')
         return False
     else:
         return True
@@ -282,7 +285,7 @@ def optimize_model(self):
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-
+    self.loss_history.append(loss)
     # Optimize the model
     optimizer.zero_grad()
     loss.backward()

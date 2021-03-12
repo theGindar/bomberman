@@ -144,8 +144,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     if self.current_episode_num % TARGET_UPDATE == 0:
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
-    self.current_episode_num += 1
+
     print(f'finished episode {self.current_episode_num}')
+    self.current_episode_num += 1
+    
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")

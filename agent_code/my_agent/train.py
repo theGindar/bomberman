@@ -156,7 +156,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     #print(f'Positions: {len(self.positions)}')
     self.positions = []
-    print(f'finished episode {self.current_episode_num}')
 
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:
@@ -179,12 +178,12 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.MOVED_UP: 0,
         e.WAITED: -50,
         e.BOMB_DROPPED: 0,
-        e.KILLED_SELF: -500,
-        e.REPEATS_STEPS: -15
+        e.KILLED_SELF: -500
     }
     for i in events:
         if i == e.REPEATS_STEPS:
-            print("step repeated!")
+            #("step repeated!")
+            pass
     reward_sum = 0
     for event in events:
         if event in game_rewards:

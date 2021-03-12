@@ -194,8 +194,19 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
 
     reward_sum += int(100 - distance_coin*100)
     print(f'reward: {reward_sum}')
-    return reward_sum
 
+    # normalize the calculated reward
+    max_reward = 0
+    min_reward = 0
+    for key, value in game_rewards.items():
+        if value > 0:
+            max_reward += value
+        else:
+            min_reward -= value
+
+    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100)
+    print(f'Reward {reward_sum}')
+    return reward_sum
 
 def calc_coin_distance(game_state: dict):
     # maximum distance an agent could have to a coin

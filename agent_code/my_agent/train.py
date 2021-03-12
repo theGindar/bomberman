@@ -180,8 +180,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.WAITED: -50,
         e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -500,
-        e.REPEATS_STEPS: -15,
-        e.NEW_POSITION_EXPLORED: 20
+        e.REPEATS_STEPS: -15
     }
     for i in events:
         if i == e.REPEATS_STEPS:
@@ -249,7 +248,6 @@ def calc_is_new_position(self, game_state: dict):
     """
     current_position = game_state['self'][3]
     if current_position in self.positions:
-        print('wiederholt!')
         return False
     else:
         return True

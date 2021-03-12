@@ -32,14 +32,14 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 256
 GAMMA = 0.999
-TARGET_UPDATE = 5
-NUM_EPISODES = 10
+TARGET_UPDATE = 10
+NUM_EPISODES = 200
 LEARNING_RATE = 0.0001
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
+if len(os.listdir("./agent_code/my_agent/saved_models")) == 0:
     print('loading existing model...')
     policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
@@ -156,7 +156,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     #print(f'Positions: {len(self.positions)}')
     self.positions = []
-    #print(f'finished episode {self.current_episode_num}')
+    print(f'finished episode {self.current_episode_num}')
 
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:
@@ -193,7 +193,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     reward_sum += int(100 - distance_coin*100)
-    print(f'reward: {reward_sum}')
+    #print(f'reward: {reward_sum}')
 
     # normalize the calculated reward
     max_reward = 0
@@ -205,7 +205,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
             min_reward -= value
 
     reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100)
-    print(f'Reward {reward_sum}')
+    #print(f'Reward {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

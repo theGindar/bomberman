@@ -30,7 +30,7 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 GAMMA = 0.999
 TARGET_UPDATE = 5
 NUM_EPISODES = 10
@@ -39,7 +39,7 @@ LEARNING_RATE = 0.0001
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if len(os.listdir("./agent_code/my_agent/saved_models")) == 0:
+if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
     print('loading existing model...')
     policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))

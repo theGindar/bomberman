@@ -71,7 +71,7 @@ def setup_training(self):
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(300000)
     self.total_reward_history = []
-    self.loss_history = []
+    #self.loss_history = []
     self.positions = []
 
 
@@ -151,7 +151,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     if self.current_episode_num == NUM_EPISODES:
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
-        save_loss_to_file(self.loss_history)
+        #save_loss_to_file(self.loss_history)
     self.total_reward = 0
 
     #print(f'Positions: {len(self.positions)}')
@@ -293,7 +293,7 @@ def optimize_model(self):
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    self.loss_history.append(loss)
+    #self.loss_history.append(loss)
     # Optimize the model
     optimizer.zero_grad()
     loss.backward()

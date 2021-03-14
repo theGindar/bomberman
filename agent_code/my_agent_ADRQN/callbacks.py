@@ -53,12 +53,13 @@ def act(self, game_state: dict) -> str:
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
-
     if sample > eps_threshold:
         action, agent_code.my_agent_ADRQN.global_model_variables.hidden_s = \
             policy_net.act(features.to(device),
                            F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                            hidden = agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
+
+
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         # print(f'action chosen: {action}')
             
@@ -86,8 +87,9 @@ def act(self, game_state: dict) -> str:
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
     if self.steps_done == 400:
+        # todo problem: wenn weniger als 400 steps wird es nicht zurückgesetzt...
         self.steps_done = 0
-        agent_code.my_agent_ADRQN.global_model_variables = 4
+        agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
     return ACTIONS[action]
 
 

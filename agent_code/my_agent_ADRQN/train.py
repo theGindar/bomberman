@@ -40,11 +40,11 @@ LEARNING_RATE = 0.0001
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-#if len(os.listdir("./agent_code/my_agent/saved_models")) != 0:
-#    print('loading existing model...')
-#    policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
+if len(os.listdir("./agent_code/my_agent_ADRQN/saved_models/")) == 0:
+    print('loading existing model...')
+    policy_net.load_state_dict(torch.load("./agent_code/my_agent_ADRQN/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
-#    policy_net.eval()
+    policy_net.eval()
 
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
@@ -166,6 +166,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     #print(f'Positions: {len(self.positions)}')
     self.positions = []
     self.last_action = 4
+    agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
 
 
 def reward_from_events(self, events: List[str], distance_coin) -> int:

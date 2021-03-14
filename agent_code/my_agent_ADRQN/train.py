@@ -165,7 +165,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     #print(f'Positions: {len(self.positions)}')
     self.positions = []
-    agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
     self.last_action = 4
 
 

@@ -47,9 +47,6 @@ class ReplayMemory(object):
             rewards.append(list(rew))
             observations.append(torch.cat(list(obs)))
             dones.append(list(done))
-            print(torch.stack(last_observations).shape)
-        print("last actions")
-        print(torch.tensor(last_actions).to(device).shape)
         return torch.tensor(last_actions).to(device), \
                torch.cat(last_observations), \
                torch.tensor(actions).to(device), \

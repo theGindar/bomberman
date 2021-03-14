@@ -70,7 +70,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 20)
+    self.memory = ReplayMemory(300000, 1)
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []
@@ -109,14 +109,14 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     reward = torch.tensor([reward], device=device)
     if  state_to_features(old_game_state) != None:
         #self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
-        self.memory.write_tuple((self.last_action,
+        self.memory.write_tuple((torch.tensor(self.last_action).to(device),
                                  state_to_features(old_game_state).to(device),
-                                 self_action,
-                                 reward,
+                                 torch.tensor(ACTIONS[self_action]).to(device),
+                                 torch.tensor(reward).to(device),
                                  state_to_features(new_game_state).to(device),
-                                 False))
-
-    self.last_action = self_action
+                                 torch.tensor(False).to(device)))
+    if self_action != None:
+        self.last_action = ACTIONS[self_action]
     self.positions.append(new_game_state['self'][3])
 
     self.old_game_state = old_game_state
@@ -263,7 +263,7 @@ def calc_is_new_position(self, game_state: dict):
         return True
 
 
-def optimize_model(self):
+def optimize_model_depr(self):
     if len(self.memory) <= BATCH_SIZE:
         return
     transitions = self.memory.sample(BATCH_SIZE)

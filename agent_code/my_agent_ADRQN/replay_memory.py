@@ -42,16 +42,19 @@ class ReplayMemory(object):
             start_idx = np.random.randint(self.filled-seq_len)
             last_act, last_obs, act, rew, obs, done = zip(*self.storage[start_idx:start_idx+seq_len])
             last_actions.append(list(last_act))
-            last_observations.append(last_obs)
+            last_observations.append(torch.cat(last_obs))
             actions.append(list(act))
             rewards.append(list(rew))
-            observations.append(list(obs))
+            observations.append(torch.cat(list(obs)))
             dones.append(list(done))
-
+            print(torch.stack(last_observations).shape)
+        print("last actions")
+        print(torch.tensor(last_actions).to(device).shape)
         return torch.tensor(last_actions).to(device), \
-               torch.tensor(last_observations, dtype = torch.float32).to(device), \
-               torch.tensor(actions).to(device), torch.tensor(rewards).float().to(device) , \
-               torch.tensor(observations, dtype = torch.float32).to(device), \
+               torch.cat(last_observations), \
+               torch.tensor(actions).to(device), \
+               torch.tensor(rewards).float().to(device), \
+               torch.cat(observations), \
                torch.tensor(dones).to(device)
 
     def __len__(self):

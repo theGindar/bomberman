@@ -34,13 +34,13 @@ ACTIONS = { 'UP': 0,
 BATCH_SIZE = 64
 GAMMA = 0.99
 TARGET_UPDATE = 10
-NUM_EPISODES = 200
+NUM_EPISODES = 20
 LEARNING_RATE = 0.0001
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if len(os.listdir("./agent_code/my_agent_ADRQN/saved_models/")) == 0:
+if len(os.listdir("./agent_code/my_agent_ADRQN/saved_models/")) != 0:
     print('loading existing model...')
     policy_net.load_state_dict(torch.load("./agent_code/my_agent_ADRQN/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))
@@ -70,7 +70,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 10)
+    self.memory = ReplayMemory(300000, 8)
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []
@@ -97,8 +97,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
 
     min_coin_distance = calc_coin_distance(new_game_state)
-    #if calc_position_change(self, new_game_state):
-    #    events.append('REPEATS_STEPS')
+    if calc_position_change(self, new_game_state):
+        events.append('REPEATS_STEPS')
     if calc_is_new_position(self, new_game_state):
         events.append('NEW_POSITION_EXPLORED')
 
@@ -173,15 +173,17 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     target_net.load_state_dict(policy_net.state_dict())
 
     print(f'finished episode {self.current_episode_num}')
-    self.current_episode_num += 1
+
     
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
+        print("saving model...")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
     print(f'TOTAL REWARD: {self.total_reward}')
     self.total_reward = 0
+    self.current_episode_num += 1
 
     #print(f'Positions: {len(self.positions)}')
     self.positions = []
@@ -210,6 +212,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.WAITED: -50,
         e.BOMB_DROPPED: 0,
         e.KILLED_SELF: -500
+        #e.REPEATS_STEPS: -20
     }
     for i in events:
         if i == e.REPEATS_STEPS:

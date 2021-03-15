@@ -48,10 +48,10 @@ class ReplayMemory(object):
             observations.append(torch.cat(list(obs)))
             dones.append(list(done))
         return torch.tensor(last_actions).to(device), \
-               torch.cat(last_observations), \
+               torch.stack(last_observations).permute(0, 2, 1, 3, 4), \
                torch.tensor(actions).to(device), \
                torch.tensor(rewards).float().to(device), \
-               torch.cat(observations), \
+               torch.stack(observations).permute(0, 2, 1, 3, 4), \
                torch.tensor(dones).to(device)
 
     def __len__(self):

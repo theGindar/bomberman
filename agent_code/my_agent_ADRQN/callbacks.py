@@ -55,11 +55,9 @@ def act(self, game_state: dict) -> str:
     self.steps_done += 1
     if sample > eps_threshold:
         action, agent_code.my_agent_ADRQN.global_model_variables.hidden_s = \
-            policy_net.act(features.to(device),
+            policy_net.act(torch.unsqueeze(features.to(device), 2),
                            F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                            hidden = agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
-
-
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         # print(f'action chosen: {action}')
             

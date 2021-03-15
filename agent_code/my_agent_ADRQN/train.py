@@ -70,7 +70,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 1)
+    self.memory = ReplayMemory(300000, 20)
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []

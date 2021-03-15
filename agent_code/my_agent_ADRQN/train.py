@@ -40,7 +40,7 @@ LEARNING_RATE = 0.0001
 target_net = Model().to(device)
 policy_net = Model().to(device)
 
-if len(os.listdir("./agent_code/my_agent_ADRQN/saved_models/")) != 0:
+if len(os.listdir("./agent_code/my_agent_ADRQN/saved_models/")) == 0:
     print('loading existing model...')
     policy_net.load_state_dict(torch.load("./agent_code/my_agent_ADRQN/saved_models/krasses_model.pt", map_location=torch.device('cpu')))
     #policy_net.load_state_dict(torch.load("./agent_code/my_agent/saved_models/krasses_model.pt"))

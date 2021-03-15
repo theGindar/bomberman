@@ -34,7 +34,7 @@ ACTIONS = { 'UP': 0,
 BATCH_SIZE = 64
 GAMMA = 0.99
 TARGET_UPDATE = 10
-NUM_EPISODES = 20
+NUM_EPISODES = 1000
 LEARNING_RATE = 0.0001
 
 target_net = Model().to(device)
@@ -70,7 +70,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 8)
+    self.memory = ReplayMemory(300000, 12)
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []
@@ -177,7 +177,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     
     self.total_reward_history.append(self.total_reward)
     if self.current_episode_num == NUM_EPISODES:
-        print("saving model...")
+        print(f"saving model...{self.current_episode_num}")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)

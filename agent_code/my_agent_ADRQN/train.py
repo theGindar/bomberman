@@ -120,6 +120,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     self.positions.append(new_game_state['self'][3])
 
     self.old_game_state = old_game_state
+    self.last_old_game_state = new_game_state
     optimize_model(self)
 
     self.logger.debug(f'Encountered game event(s) {", ".join(map(repr, events))} in step {new_game_state["step"]}')
@@ -140,9 +141,27 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     #reward = reward_from_events(self, events)
     #self.total_reward += reward
     #self.total_reward_tensor = torch.tensor([self.total_reward], device=device)
+    min_coin_distance = calc_coin_distance(last_game_state)
+    # if calc_position_change(self, new_game_state):
+    #    events.append('REPEATS_STEPS')
+    if calc_is_new_position(self, last_game_state):
+        events.append('NEW_POSITION_EXPLORED')
+
+    reward = reward_from_events(self, events, min_coin_distance)
+
+    self.total_reward += reward
 
     #self.memory.push(state_to_features(self.old_game_state), last_action, state_to_features(last_game_state), self.total_reward_tensor)
-
+    if  state_to_features(self.last_old_game_state) != None:
+        #self.memory.push(state_to_features(old_game_state).to(device), self_action, state_to_features(new_game_state).to(device), reward)
+        self.memory.write_tuple((torch.tensor(self.last_action).to(device),
+                                 state_to_features(self.last_old_game_state).to(device),
+                                 torch.tensor(ACTIONS[last_action]).to(device),
+                                 torch.tensor(reward).to(device),
+                                 state_to_features(last_game_state).to(device),
+                                 torch.tensor(True).to(device)))
+    if last_action != None:
+        self.last_action = ACTIONS[last_action]
     #optimize_model(self)
 
 
@@ -161,6 +180,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
+    print(f'TOTAL REWARD: {self.total_reward}')
     self.total_reward = 0
 
     #print(f'Positions: {len(self.positions)}')

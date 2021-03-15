@@ -162,7 +162,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
                                  torch.tensor(True).to(device)))
     if last_action != None:
         self.last_action = ACTIONS[last_action]
-    #optimize_model(self)
+    optimize_model(self)
 
 
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')

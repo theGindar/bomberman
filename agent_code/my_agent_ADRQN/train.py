@@ -168,7 +168,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
     #self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
 
-    #if self.current_episode_num % TARGET_UPDATE == 0:
+    if self.current_episode_num % TARGET_UPDATE == 0:
+        print(f"saving model...{self.current_episode_num}")
+        torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
+        save_rewards_to_file(self.total_reward_history)
     print('update target_net')
     target_net.load_state_dict(policy_net.state_dict())
 

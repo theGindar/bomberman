@@ -15,8 +15,8 @@ class Model(nn.Module):
         self.obs_conv2 = nn.Conv3d(32, 64, (1,2,2), (1,2,2))
         self.obs_conv3 = nn.Conv3d(64, 64, (1,2,2), 1)
         self.obs_fc4 = nn.Linear(7 * 7 * 64, 512)
-        #self.obs_fc5 = nn.Linear(512, 32)
-        self.lstm = nn.LSTM(input_size=512 + self.embedding_size, hidden_size=128, batch_first=True)
+        self.obs_fc5 = nn.Linear(512, 32)
+        self.lstm = nn.LSTM(input_size=32 + self.embedding_size, hidden_size=128, batch_first=True)
         self.out_layer = nn.Linear(128, self.n_actions)
 
     def forward(self, observation, action, hidden=None):
@@ -31,6 +31,7 @@ class Model(nn.Module):
         observation = observation.contiguous()
         observation = observation.view(observation.size()[0], observation.size()[1], -1)
         observation = F.relu(self.obs_fc4(observation))
+        observation = F.relu(self.obs_fc5(observation))
         lstm_input = torch.cat([observation, action_embedded], dim=-1)
         if hidden is not None:
             lstm_out, hidden_out = self.lstm(lstm_input, hidden)

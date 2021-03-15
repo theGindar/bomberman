@@ -6,6 +6,7 @@ import os
 import numpy as np
 
 import events as e
+import copy
 from .model import Model
 from .utils import state_to_features, save_rewards_to_file, save_loss_to_file
 from .replay_memory import ReplayMemory
@@ -73,6 +74,8 @@ def setup_training(self):
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []
+    self.n_destroyed_crates = 0
+    self.is_in_bomb_range = False
 
 
 
@@ -95,16 +98,20 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
 
     min_coin_distance = calc_coin_distance(new_game_state)
-    #if calc_position_change(self, new_game_state):
+    # if calc_position_change(self, new_game_state):
     #    events.append('REPEATS_STEPS')
     if calc_is_new_position(self, new_game_state):
         events.append('NEW_POSITION_EXPLORED')
 
-    #set reward if bomb is dropped near crates
-    if e.BOMB_DROPPED:
-        n_destroyed_crates = crates_destroyed(self, new_game_state)
+    # set reward if bomb is dropped near crates
+    if 'BOMB_DROPPED' in events:
+        self.n_destroyed_crates = crates_destroyed(self, new_game_state)
 
-    reward = reward_from_events(self, events, min_coin_distance, n_destroyed_crates)
+    # set variable is_in_bomb_range
+    self.is_in_bomb_range = in_bomb_range(self, new_game_state)
+    #print(f'In bomb range: {self.is_in_bomb_range}')
+
+    reward = reward_from_events(self, events, min_coin_distance)
 
     
     self.total_reward += reward
@@ -162,7 +169,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
 
 
-def reward_from_events(self, events: List[str], distance_coin, n_destroyed_crates) -> int:
+def reward_from_events(self, events: List[str], distance_coin) -> int:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -197,7 +204,9 @@ def reward_from_events(self, events: List[str], distance_coin, n_destroyed_crate
     reward_sum += int(5 - distance_coin*5)
 
     #set reward for destroyed crates
-    reward_sum += n_destroyed_crates*400
+    reward_sum += self.n_destroyed_crates*400
+    self.n_destroyed_coins = 0
+    #print(f'Number of destroyed crates: {self.n_destroyed_crates}')
 
     # normalize the calculated reward
     max_reward = 0
@@ -208,7 +217,7 @@ def reward_from_events(self, events: List[str], distance_coin, n_destroyed_crate
         else:
             min_reward -= value
 
-    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100+1600)
+    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100+3600)
     #print(f'Reward {reward_sum}')
     return reward_sum
 
@@ -219,7 +228,7 @@ def calc_coin_distance(game_state: dict):
     min_distance = 0
 
     """calculate distance of agent to next coin (a value between 0 and 1)"""
-    min_coin_distance = float('inf')
+    min_coin_distance = float(10000)
     agent_position = np.asarray(game_state['self'][3])
     for coin in game_state['coins']:
         dist = np.linalg.norm(agent_position-np.asarray(coin))
@@ -273,17 +282,79 @@ def crates_destroyed(self, game_state:dict):
         if bomb_position_x-i-1 >= 0:
             if game_state['field'][bomb_position_x-i-1][bomb_position_y] == 1:
                 n_crates += 1
-        elif bomb_position_x+i+1 <= 17:
+            elif game_state['field'][bomb_position_x-i-1][bomb_position_y] == -1:
+                break
+
+    for i in range(3):
+        if bomb_position_x+i+1 <= 16:
             if game_state['field'][bomb_position_x+i+1][bomb_position_y] == 1:
                 n_crates += 1
-        elif bomb_position_y-i-1 >= 0:
+            elif game_state['field'][bomb_position_x+i+1][bomb_position_y] == -1:
+                break
+
+    for i in range(3):
+        if bomb_position_y-i-1 >= 0:
             if game_state['field'][bomb_position_x][bomb_position_y-i-1] == 1:
                 n_crates += 1
-        elif bomb_position_y+i+1 <= 17:
+            elif game_state['field'][bomb_position_x][bomb_position_y-i-1] == -1:
+                break
+
+    for i in range(3):
+        if bomb_position_y+i+1 <= 16:
             if game_state['field'][bomb_position_x][bomb_position_y+i+1] == 1:
                 n_crates += 1
+            elif game_state['field'][bomb_position_x][bomb_position_y+i+1] == -1:
+                break
 
     return n_crates
+
+def in_bomb_range(self, game_state: dict):
+    """
+
+    returns true, if the agent is in the bomb explosion radius
+
+    """
+    is_in_bomb_range = False
+    agent_position = game_state['self'][3]
+    agent_position = list(agent_position)
+
+    for bomb in game_state['bombs']:
+        if agent_position == list(bomb[0]):
+            is_in_bomb_range = True
+
+        for i in range(3):
+            agent_search = copy.copy(agent_position)
+            if agent_position[0]-i-1 >= 0:
+                agent_search[0] = agent_position[0]-i-1
+                if agent_search == list(bomb[0]):
+                    is_in_bomb_range = True
+
+        for i in range(3):
+            agent_search = copy.copy(agent_position)
+            if agent_position[0]+i+1 <= 16:
+                agent_search[0] = agent_position[0]+i+1
+                if agent_search == list(bomb[0]):
+                    is_in_bomb_range = True
+
+        for i in range(3):
+            agent_search = copy.copy(agent_position)
+            if agent_position[1]-i-1 >= 0:
+                agent_search[1] = agent_position[1]-i-1
+                if agent_search == list(bomb[0]):
+                    is_in_bomb_range = True
+
+        for i in range(3):
+            agent_search = copy.copy(agent_position)
+            if agent_position[1]+i+1 <= 16:
+                agent_search[1] = agent_position[1]+i+1
+                if agent_search == list(bomb[0]):
+                    is_in_bomb_range = True
+
+
+    # check if a stone wall is between the agent an the bomb
+    if is_in_bomb_range:
+        print('')
+    return is_in_bomb_range
 
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:

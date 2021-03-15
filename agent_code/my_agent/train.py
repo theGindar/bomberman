@@ -100,7 +100,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if calc_is_new_position(self, new_game_state):
         events.append('NEW_POSITION_EXPLORED')
 
-    reward = reward_from_events(self, events, min_coin_distance)
+    #set reward if bomb is dropped near crates
+    if e.BOMB_DROPPED:
+        n_destroyed_crates = crates_destroyed(self, new_game_state)
+
+    reward = reward_from_events(self, events, min_coin_distance, n_destroyed_crates)
 
     
     self.total_reward += reward
@@ -158,7 +162,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
 
 
-def reward_from_events(self, events: List[str], distance_coin) -> int:
+def reward_from_events(self, events: List[str], distance_coin, n_destroyed_crates) -> int:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -169,16 +173,16 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 7000,
+        e.COIN_COLLECTED: 700,
         e.KILLED_OPPONENT: 5,
         e.INVALID_ACTION: -35,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: -50,
+        e.WAITED: 0,
         e.BOMB_DROPPED: 0,
-        e.KILLED_SELF: -500
+        e.KILLED_SELF: -1000
     }
     for i in events:
         if i == e.REPEATS_STEPS:
@@ -190,8 +194,10 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
-    reward_sum += int(100 - distance_coin*100)
-    #print(f'reward: {reward_sum}')
+    reward_sum += int(5 - distance_coin*5)
+
+    #set reward for destroyed crates
+    reward_sum += n_destroyed_crates*400
 
     # normalize the calculated reward
     max_reward = 0
@@ -202,7 +208,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         else:
             min_reward -= value
 
-    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100)
+    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100+1600)
     #print(f'Reward {reward_sum}')
     return reward_sum
 
@@ -251,6 +257,33 @@ def calc_is_new_position(self, game_state: dict):
     else:
         return True
 
+def crates_destroyed(self, game_state:dict):
+    """
+
+    returns the number of crates, which will be destroyed by a bomb
+
+    iterate through every line in which the bomb will be destroyed.
+    """
+
+    bomb_position_x = game_state['self'][3][0]
+    bomb_position_y = game_state['self'][3][1]
+    n_crates = 0
+
+    for i in range(3):
+        if bomb_position_x-i-1 >= 0:
+            if game_state['field'][bomb_position_x-i-1][bomb_position_y] == 1:
+                n_crates += 1
+        elif bomb_position_x+i+1 <= 17:
+            if game_state['field'][bomb_position_x+i+1][bomb_position_y] == 1:
+                n_crates += 1
+        elif bomb_position_y-i-1 >= 0:
+            if game_state['field'][bomb_position_x][bomb_position_y-i-1] == 1:
+                n_crates += 1
+        elif bomb_position_y+i+1 <= 17:
+            if game_state['field'][bomb_position_x][bomb_position_y+i+1] == 1:
+                n_crates += 1
+
+    return n_crates
 
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:

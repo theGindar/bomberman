@@ -60,7 +60,7 @@ def act(self, game_state: dict) -> str:
     if sample > eps_threshold:
 
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
-        print(f'action chosen: {action}')
+        #print(f'action chosen: {action}')
             
     else:
         action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)

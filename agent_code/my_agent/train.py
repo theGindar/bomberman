@@ -111,7 +111,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if in_bomb_range(self, new_game_state):
         events.append('IN_BOMB_RANGE')
 
-    reward = reward_from_events(self, events, min_coin_distance)
+    reward = reward_from_events(self, events, min_coin_distance, new_game_state)
 
     
     self.total_reward += reward
@@ -169,7 +169,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
 
 
-def reward_from_events(self, events: List[str], distance_coin) -> int:
+def reward_from_events(self, events: List[str], distance_coin, game_state: dict) -> int:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -202,12 +202,14 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
-    reward_sum += int(5 - distance_coin*5)
+    if len(game_state['coins']) != 0:
+        reward_sum += int(5 - distance_coin*5)
 
     #set reward for destroyed crates
     reward_sum += self.n_destroyed_crates*200
     self.n_destroyed_coins = 0
     #print(f'Number of destroyed crates: {self.n_destroyed_crates}')
+    print(f'Reward: {reward_sum}')
 
     """
     # normalize the calculated reward

@@ -108,8 +108,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         self.n_destroyed_crates = crates_destroyed(self, new_game_state)
 
     # set variable is_in_bomb_range
-    self.is_in_bomb_range = in_bomb_range(self, new_game_state)
-    #print(f'In bomb range: {self.is_in_bomb_range}')
+    if in_bomb_range(self, new_game_state):
+        events.append('IN_BOMB_RANGE')
 
     reward = reward_from_events(self, events, min_coin_distance)
 
@@ -189,6 +189,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
         e.MOVED_UP: 0,
         e.WAITED: 0,
         e.BOMB_DROPPED: 0,
+        e.IN_BOMB_RANGE: -10,
         e.KILLED_SELF: -1000
     }
     for i in events:
@@ -204,10 +205,11 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
     reward_sum += int(5 - distance_coin*5)
 
     #set reward for destroyed crates
-    reward_sum += self.n_destroyed_crates*400
+    reward_sum += self.n_destroyed_crates*200
     self.n_destroyed_coins = 0
     #print(f'Number of destroyed crates: {self.n_destroyed_crates}')
 
+    """
     # normalize the calculated reward
     max_reward = 0
     min_reward = 0
@@ -219,6 +221,7 @@ def reward_from_events(self, events: List[str], distance_coin) -> int:
 
     reward_sum = (reward_sum + min_reward) / (max_reward+min_reward+100+3600)
     #print(f'Reward {reward_sum}')
+    """
     return reward_sum
 
 def calc_coin_distance(game_state: dict):
@@ -351,9 +354,27 @@ def in_bomb_range(self, game_state: dict):
                     is_in_bomb_range = True
 
 
-    # check if a stone wall is between the agent an the bomb
-    if is_in_bomb_range:
-        print('')
+        # check if a stone wall is between the agent an the bomb
+        if is_in_bomb_range:
+            if agent_position[0] == list(bomb[0])[0]:
+                if agent_position[1] < list(bomb[0])[1]:
+                    for i in range(agent_position[1], list(bomb[0])[1]):
+                        if game_state['field'][agent_position[0]][i] == -1:
+                            is_in_bomb_range = False
+                else:
+                    for i in range(list(bomb[0])[1], agent_position[1]):
+                        if game_state['field'][agent_position[0]][i] == -1:
+                            is_in_bomb_range = False
+            elif agent_position[1] == list(bomb[0])[1]:
+                if agent_position[0] < list(bomb[0])[0]:
+                    for i in range(agent_position[0], list(bomb[0])[0]):
+                        if game_state['field'][i][agent_position[1]] == -1:
+                            is_in_bomb_range = False
+                else:
+                    for i in range(list(bomb[0])[0], agent_position[0]):
+                        if game_state['field'][i][agent_position[1]] == -1:
+                            is_in_bomb_range = False
+
     return is_in_bomb_range
 
 def optimize_model(self):

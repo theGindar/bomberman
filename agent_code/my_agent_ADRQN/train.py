@@ -34,7 +34,7 @@ ACTIONS = { 'UP': 0,
 BATCH_SIZE = 64
 GAMMA = 0.99
 TARGET_UPDATE = 10
-NUM_EPISODES = 1000
+NUM_EPISODES = 200
 LEARNING_RATE = 0.0001
 
 target_net = Model().to(device)
@@ -70,7 +70,7 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 20)
+    self.memory = ReplayMemory(300000, 6)
     self.total_reward_history = []
     #self.loss_history = []
     self.positions = []
@@ -149,9 +149,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.logger.debug(f'Encountered event(s) {", ".join(map(repr, events))} in final step')
     #self.transitions.append(Transition(state_to_features(last_game_state), last_action, None, reward_from_events(self, events)))
 
-    if self.current_episode_num % TARGET_UPDATE == 0:
-        print('update target_net')
-        target_net.load_state_dict(policy_net.state_dict())
+    #if self.current_episode_num % TARGET_UPDATE == 0:
+    print('update target_net')
+    target_net.load_state_dict(policy_net.state_dict())
 
     print(f'finished episode {self.current_episode_num}')
     self.current_episode_num += 1

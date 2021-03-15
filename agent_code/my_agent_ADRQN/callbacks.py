@@ -53,19 +53,18 @@ def act(self, game_state: dict) -> str:
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
+    action, agent_code.my_agent_ADRQN.global_model_variables.hidden_s = \
+        policy_net.act(torch.unsqueeze(features.to(device), 2),
+                       F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
+                       hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
     if sample > eps_threshold:
-        action, agent_code.my_agent_ADRQN.global_model_variables.hidden_s = \
-            policy_net.act(torch.unsqueeze(features.to(device), 2),
-                           F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
-                           hidden = agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
+
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
-        # print(f'action chosen: {action}')
+        print(f'action chosen: {action}')
             
     else:
-        # action = torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
-        #action = policy_net(features).max(1)[1].view(1, 1)
         action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
-        
+        agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
         #action = policy_net(features.to(device)).max(1)[1].view(1, 1)

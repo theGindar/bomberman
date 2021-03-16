@@ -172,8 +172,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         print(f"saving model...{self.current_episode_num}")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
-    print('update target_net')
-    target_net.load_state_dict(policy_net.state_dict())
+        print('update target_net')
+        target_net.load_state_dict(policy_net.state_dict())
 
     print(f'finished episode {self.current_episode_num}')
 

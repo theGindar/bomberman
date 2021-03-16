@@ -33,7 +33,7 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 64
 GAMMA = 0.99
-TARGET_UPDATE = 10
+TARGET_UPDATE = 20
 NUM_EPISODES = 1000
 LEARNING_RATE = 0.0001
 
@@ -180,16 +180,16 @@ def reward_from_events(self, events: List[str], distance_coin, game_state: dict)
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 700,
+        e.COIN_COLLECTED: 1000,
         e.KILLED_OPPONENT: 5,
-        e.INVALID_ACTION: -35,
+        e.INVALID_ACTION: -20,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: 0,
-        e.BOMB_DROPPED: 0,
-        e.IN_BOMB_RANGE: -10,
+        e.WAITED: -20,
+        e.BOMB_DROPPED: 20,
+        e.IN_BOMB_RANGE: -20,
         e.KILLED_SELF: -1000
     }
     for i in events:
@@ -203,13 +203,20 @@ def reward_from_events(self, events: List[str], distance_coin, game_state: dict)
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
     if len(game_state['coins']) != 0:
-        reward_sum += int(5 - distance_coin*5)
+        reward_sum += int(100 - distance_coin*100)
+
+    # no bombs in corners
+    corners = [(1,1), (1,15), (15,15), (15,1)]
+    if 'BOMB_DROPPED' in events:
+        for corner in corners:
+            if corner == game_state['self'][3]:
+                reward_sum -= 2000
 
     #set reward for destroyed crates
-    reward_sum += self.n_destroyed_crates*200
-    self.n_destroyed_coins = 0
+    reward_sum += self.n_destroyed_crates*300
+    self.n_destroyed_crates = 0
     #print(f'Number of destroyed crates: {self.n_destroyed_crates}')
-    print(f'Reward: {reward_sum}')
+    #print(f'Reward: {reward_sum}')
 
     """
     # normalize the calculated reward

@@ -46,7 +46,6 @@ def act(self, game_state: dict) -> str:
     """
     features = state_to_features(game_state)
 
-    
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
@@ -68,7 +67,8 @@ def act(self, game_state: dict) -> str:
         #action = policy_net(features).max(1)[1].view(1, 1)
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
         
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .15, .05])]], device=device, dtype=torch.long)
 
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[0, 0, 0, 0, 0, 1])]], device=device, dtype=torch.long)
 

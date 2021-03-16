@@ -7,7 +7,7 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         self.n_actions = 6
-        self.embedding_size = 12
+        self.embedding_size = 32
         self.embedder = nn.Linear(self.n_actions, self.embedding_size)
         #self.obs_layer = nn.Linear(state_size, 16)
         #self.obs_layer2 = nn.Linear(16, 32)
@@ -15,9 +15,9 @@ class Model(nn.Module):
         self.obs_conv2 = nn.Conv3d(32, 64, (1,2,2), (1,2,2))
         self.obs_conv3 = nn.Conv3d(64, 64, (1,2,2), 1)
         self.obs_fc4 = nn.Linear(7 * 7 * 64, 512)
-        self.obs_fc5 = nn.Linear(512, 32)
-        self.lstm = nn.LSTM(input_size=32 + self.embedding_size, hidden_size=128, batch_first=True)
-        self.out_layer = nn.Linear(128, self.n_actions)
+        #self.obs_fc5 = nn.Linear(512, 64)
+        self.lstm = nn.LSTM(input_size=512 + self.embedding_size, hidden_size=512, batch_first=True)
+        self.out_layer = nn.Linear(512, self.n_actions)
 
     def forward(self, observation, action, hidden=None):
         # Takes observations with shape (batch_size, seq_len, state_size)
@@ -31,7 +31,7 @@ class Model(nn.Module):
         observation = observation.contiguous()
         observation = observation.view(observation.size()[0], observation.size()[1], -1)
         observation = F.relu(self.obs_fc4(observation))
-        observation = F.relu(self.obs_fc5(observation))
+        #observation = F.relu(self.obs_fc5(observation))
         lstm_input = torch.cat([observation, action_embedded], dim=-1)
         if hidden is not None:
             lstm_out, hidden_out = self.lstm(lstm_input, hidden)

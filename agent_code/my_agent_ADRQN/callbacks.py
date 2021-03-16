@@ -63,11 +63,14 @@ def act(self, game_state: dict) -> str:
         #print(f'action chosen: {action}')
             
     else:
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
-        agent_code.my_agent_ADRQN.global_model_variables.last_action = action
-        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+        # action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
 
-        #action = policy_net(features.to(device)).max(1)[1].view(1, 1)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .15, .05])]], device=device, dtype=torch.long)
+
+        agent_code.my_agent_ADRQN.global_model_variables.last_action = action
+        # action = policy_net(features.to(device)).max(1)[1].view(1, 1)
 
     #print(f'steps done: {self.steps_done}')
     

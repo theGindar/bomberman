@@ -252,6 +252,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         e.CRATE_DESTROYED: 500
         #e.REPEATS_STEPS: -20
     }
+
     for i in events:
         if i == e.REPEATS_STEPS:
             #("step repeated!")
@@ -261,7 +262,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         if event in game_rewards:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
-
+    print(f'Reward from events: {reward_sum}')
     #set reward for the coin distance
     if len(game_state['coins']) != 0:
         reward_sum += int(100 - distance_coin * 100)
@@ -270,7 +271,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     for event in events:
         if event == e.IN_BOMB_RANGE:
             reward_sum += int(distance_bomb*500 - 100)
-
+    print(f'Reward bomb distance: {reward_sum}')
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
     if 'BOMB_DROPPED' in events:
@@ -278,10 +279,11 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
             if corner == game_state['self'][3]:
                 reward_sum -= 2000
 
+    print(f'Reward corners: {reward_sum}')
     # set reward for destroyed crates
     reward_sum += self.n_destroyed_crates * 300
     self.n_destroyed_crates = 0
-
+    print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward
     max_reward = 3000
     min_reward = -2100
@@ -290,9 +292,11 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
             max_reward += value
         else:
             min_reward += value
-            
-    reward_sum = (reward_sum + min_reward) / (max_reward+min_reward)
-    #print(f'Reward {reward_sum}')
+    print(f'minreward: {min_reward}')
+    print(f'maxreward: {max_reward}')
+
+    reward_sum = (reward_sum - min_reward) / (max_reward-min_reward)
+    print(f'Reward {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

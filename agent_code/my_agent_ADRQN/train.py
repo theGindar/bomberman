@@ -225,7 +225,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.last_action = 4
     agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
     self.steps_done = 0
-
+    print(f'Number of steps: {self.steps_done}')
 
 def reward_from_events(self, events: List[str], distance_coin, distance_bomb, game_state: dict) -> int:
     """

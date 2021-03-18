@@ -49,7 +49,7 @@ def act(self, game_state: dict) -> str:
     :return: The action to take as a string.
     """
     features = state_to_features(game_state)
-
+    #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
     random_threshold = .15

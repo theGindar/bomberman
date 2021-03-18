@@ -52,6 +52,9 @@ def save_rewards_to_file(rewards_list):
     with open(f'./rewards/rewards.pkl', 'wb') as f:
        pickle.dump(rewards_list, f)
 
+def save_num_steps_to_file(num_steps):
+    with open(f'./rewards/num_steps_per_round.pkl', 'wb') as f:
+       pickle.dump(num_steps, f)
 
 def save_loss_to_file(loss_list):
     with open(f'./rewards/loss.pkl', 'wb') as f:

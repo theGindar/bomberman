@@ -8,7 +8,7 @@ import numpy as np
 import events as e
 import copy
 from .model import Model
-from .utils import state_to_features, save_rewards_to_file, save_loss_to_file
+from .utils import state_to_features, save_rewards_to_file, save_num_steps_to_file
 from .replay_memory import ReplayMemory
 import torch
 import torch.optim as optim
@@ -73,6 +73,7 @@ def setup_training(self):
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     self.memory = ReplayMemory(300000, 12)
     self.total_reward_history = []
+    self.total_steps_done_history = []
     #self.loss_history = []
     self.positions = []
     self.last_action = 4
@@ -99,7 +100,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-
+    #print(f'steps_done in game event: {self.steps_done}')
     min_coin_distance = calc_coin_distance(new_game_state)
 
     if calc_position_change(self, new_game_state):
@@ -196,6 +197,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         print(f"saving model...{self.current_episode_num}")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
+        save_num_steps_to_file(self.total_steps_done_history)
         print('update target_net')
         target_net.load_state_dict(policy_net.state_dict())
 
@@ -203,12 +205,18 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     
     self.total_reward_history.append(self.total_reward)
+    self.total_steps_done_history.append(self.steps_done)
     if self.current_episode_num == NUM_EPISODES:
         print(f"saving model...{self.current_episode_num}")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
     print(f'TOTAL REWARD: {self.total_reward}')
+    print(f'steps done: {self.steps_done}')
+
+
+
+
     self.total_reward = 0
     self.current_episode_num += 1
 

@@ -1,6 +1,6 @@
 import random
 import numpy as np
-import  torch
+import torch
 from .shared import device
 from collections import namedtuple
 

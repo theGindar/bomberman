@@ -10,6 +10,7 @@ from .utils import state_to_features
 from .train import policy_net
 import torch.nn.functional as F
 import agent_code.my_agent_ADRQN.global_model_variables
+import time
 
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -38,6 +39,7 @@ def setup(self):
     #self.policy_net = policy_net
 
 def act(self, game_state: dict) -> str:
+    start = time.time()
     """
     Your agent should parse the input, think, and take a decision.
     When not in training mode, the maximum execution time for this method is 0.5s.
@@ -58,7 +60,7 @@ def act(self, game_state: dict) -> str:
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
     if sample > eps_threshold:
-
+        print('agent called')
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         #print(f'action chosen: {action}')
             
@@ -83,7 +85,8 @@ def act(self, game_state: dict) -> str:
     #    self.logger.debug("Choosing action purely at random.")
     #    # 80%: walk in any direction. 10% wait. 10% bomb.
     #    return np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
-
+    end = time.time()
+    #print(f'execution time: {end-start}')
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
     if self.steps_done == 400:

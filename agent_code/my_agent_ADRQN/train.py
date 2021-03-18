@@ -101,6 +101,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
 
     min_coin_distance = calc_coin_distance(new_game_state)
+
     if calc_position_change(self, new_game_state):
         events.append('REPEATS_STEPS')
     if calc_is_new_position(self, new_game_state):
@@ -110,11 +111,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if 'BOMB_DROPPED' in events:
         self.n_destroyed_crates = crates_destroyed(self, new_game_state)
 
+    is_in_bomb_range, min_bomb_distance = in_bomb_range(self, new_game_state)
     # set variable is_in_bomb_range
-    if in_bomb_range(self, new_game_state):
+    if is_in_bomb_range:
         events.append('IN_BOMB_RANGE')
 
-    reward = reward_from_events(self, events, min_coin_distance, new_game_state)
+    reward = reward_from_events(self, events, min_coin_distance, min_bomb_distance, new_game_state)
 
     
     self.total_reward += reward
@@ -154,6 +156,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     #self.total_reward += reward
     #self.total_reward_tensor = torch.tensor([self.total_reward], device=device)
     min_coin_distance = calc_coin_distance(last_game_state)
+
     # if calc_position_change(self, new_game_state):
     #    events.append('REPEATS_STEPS')
     if calc_is_new_position(self, last_game_state):
@@ -163,11 +166,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     if 'BOMB_DROPPED' in events:
         self.n_destroyed_crates = crates_destroyed(self, last_game_state)
 
+    is_in_bomb_range, min_bomb_distance = in_bomb_range(self, last_game_state)
     # set variable is_in_bomb_range
-    if in_bomb_range(self, last_game_state):
+    if is_in_bomb_range:
         events.append('IN_BOMB_RANGE')
 
-    reward = reward_from_events(self, events, min_coin_distance, last_game_state)
+    reward = reward_from_events(self, events, min_coin_distance, min_bomb_distance, last_game_state)
 
     self.total_reward += reward
 
@@ -212,9 +216,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
     self.last_action = 4
     agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
+    self.steps_done = 0
 
 
-def reward_from_events(self, events: List[str], distance_coin, game_state: dict) -> int:
+def reward_from_events(self, events: List[str], distance_coin, distance_bomb, game_state: dict) -> int:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -226,14 +231,14 @@ def reward_from_events(self, events: List[str], distance_coin, game_state: dict)
     """
     game_rewards = {
         e.COIN_COLLECTED: 5000,
-        e.KILLED_OPPONENT: 5,
+        e.KILLED_OPPONENT: 0,
         e.INVALID_ACTION: -10,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
         e.WAITED: 0,
-        e.BOMB_DROPPED: 500,
+        e.BOMB_DROPPED: 2000,
         e.IN_BOMB_RANGE: -20,
         e.KILLED_SELF: -5000,
         e.CRATE_DESTROYED: 200
@@ -249,8 +254,14 @@ def reward_from_events(self, events: List[str], distance_coin, game_state: dict)
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
 
+    #set reward for the coin distance
     if len(game_state['coins']) != 0:
         reward_sum += int(100 - distance_coin * 100)
+
+    #set reward for the bomb distance
+    for event in events:
+        if event == e.IN_BOMB_RANGE:
+            reward_sum += int(distance_bomb*400 - 100)
 
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
@@ -264,8 +275,8 @@ def reward_from_events(self, events: List[str], distance_coin, game_state: dict)
     self.n_destroyed_crates = 0
 
     # normalize the calculated reward
-    max_reward = 2100
-    min_reward = -2000
+    max_reward = 3000
+    min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:
             max_reward += value
@@ -371,6 +382,7 @@ def in_bomb_range(self, game_state: dict):
 
     """
     is_in_bomb_range = False
+    min_bomb_distance = 0
     agent_position = game_state['self'][3]
     agent_position = list(agent_position)
 
@@ -427,8 +439,27 @@ def in_bomb_range(self, game_state: dict):
                         if game_state['field'][i][agent_position[1]] == -1:
                             is_in_bomb_range = False
 
-    return is_in_bomb_range
+    if is_in_bomb_range:
+        min_bomb_distance = calc_bomb_distance(game_state)
 
+    return is_in_bomb_range, min_bomb_distance
+
+def calc_bomb_distance(game_state: dict):
+    # maximum distance an agent could have to a coin
+    max_distance = 21.5
+    # minimum distance an agent could (theoretically) have to a coin
+    min_distance = 0
+
+    """calculate distance of agent to next coin (a value between 0 and 1)"""
+    min_bomb_distance = float('inf')
+    agent_position = np.asarray(game_state['self'][3])
+    for bomb in game_state['bombs']:
+        dist = np.linalg.norm(agent_position - np.asarray(bomb[0]))
+        if min_bomb_distance > dist:
+            min_bomb_distance = dist
+
+    # normalize to a value between 0 and 1
+    return (min_bomb_distance - min_distance) / (max_distance - min_distance)
 
 def optimize_model_depr(self):
     if len(self.memory) <= BATCH_SIZE:

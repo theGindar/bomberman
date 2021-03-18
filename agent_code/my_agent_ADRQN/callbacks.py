@@ -52,6 +52,7 @@ def act(self, game_state: dict) -> str:
 
     
     sample = random.random()
+    random_threshold = 0.15
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
@@ -59,7 +60,7 @@ def act(self, game_state: dict) -> str:
         policy_net.act(torch.unsqueeze(features.to(device), 2),
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
-    if sample > eps_threshold:
+    if sample > random_threshold:
         print('agent called')
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         #print(f'action chosen: {action}')

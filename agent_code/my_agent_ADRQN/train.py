@@ -289,8 +289,8 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         if value > 0:
             max_reward += value
         else:
-            min_reward -= value
-
+            min_reward += value
+            
     reward_sum = (reward_sum + min_reward) / (max_reward+min_reward)
     #print(f'Reward {reward_sum}')
     return reward_sum

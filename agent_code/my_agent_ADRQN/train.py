@@ -224,8 +224,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
     self.last_action = 4
     agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
-    self.steps_done = 0
     print(f'Number of steps: {self.steps_done}')
+    self.steps_done = 0
 
 def reward_from_events(self, events: List[str], distance_coin, distance_bomb, game_state: dict) -> int:
     """
@@ -246,10 +246,10 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
         e.WAITED: 0,
-        e.BOMB_DROPPED: 2000,
+        e.BOMB_DROPPED: 3000,
         e.IN_BOMB_RANGE: -20,
-        e.KILLED_SELF: -5000,
-        e.CRATE_DESTROYED: 200
+        e.KILLED_SELF: -1000,
+        e.CRATE_DESTROYED: 500
         #e.REPEATS_STEPS: -20
     }
     for i in events:
@@ -269,7 +269,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #set reward for the bomb distance
     for event in events:
         if event == e.IN_BOMB_RANGE:
-            reward_sum += int(distance_bomb*400 - 100)
+            reward_sum += int(distance_bomb*500 - 100)
 
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
@@ -283,7 +283,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     self.n_destroyed_crates = 0
 
     # normalize the calculated reward
-    max_reward = 3000
+    max_reward = 5000
     min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:

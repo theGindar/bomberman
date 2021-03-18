@@ -283,7 +283,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     self.n_destroyed_crates = 0
 
     # normalize the calculated reward
-    max_reward = 5000
+    max_reward = 3000
     min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:

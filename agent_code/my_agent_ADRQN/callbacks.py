@@ -52,7 +52,7 @@ def act(self, game_state: dict) -> str:
     #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
-    random_threshold = .15
+    random_threshold = .3
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1
@@ -68,7 +68,7 @@ def act(self, game_state: dict) -> str:
     else:
         # action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
 
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
+        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
 
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .15, .05])]], device=device, dtype=torch.long)
 

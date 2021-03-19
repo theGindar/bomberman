@@ -83,34 +83,6 @@ class ReplayMemorySameEpisode(object):
         else:
             self.storage[self.current_episode] = []
 
-    def sample(self, batch_size):
-        #Returns tensors of sizes (batch_size, seq_len, *) where * depends on action/observation/return/done
-        seq_len = self.sample_length
-        last_actions = []
-        last_observations = []
-        actions = []
-        rewards = []
-        observations = []
-        dones = []
-
-        for i in range(batch_size):
-            if self.filled - seq_len < 0 :
-                raise Exception("Reduce seq_len or increase exploration at start.")
-            start_idx = np.random.randint(self.filled-seq_len)
-            last_act, last_obs, act, rew, obs, done = zip(*self.storage[start_idx:start_idx+seq_len])
-            last_actions.append(list(last_act))
-            last_observations.append(torch.cat(last_obs))
-            actions.append(list(act))
-            rewards.append(list(rew))
-            observations.append(torch.cat(list(obs)))
-            dones.append(list(done))
-        return torch.tensor(last_actions).to(device), \
-               torch.stack(last_observations).permute(0, 2, 1, 3, 4), \
-               torch.tensor(actions).to(device), \
-               torch.tensor(rewards).float().to(device), \
-               torch.stack(observations).permute(0, 2, 1, 3, 4), \
-               torch.tensor(dones).to(device)
-
     def sample(self, batch_size, seq_len):
         # Sample batches of (action, observation, action, reward, observation, done) tuples
         # With dimensions (batch_size, seq_len) for rewards/actions/done and (batch_size, seq_len, obs_dim) for observations

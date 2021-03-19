@@ -39,6 +39,7 @@ NUM_EPISODES = 1000
 LEARNING_RATE = 0.0001
 
 USE_EPISODE_MEMORY = True
+SEQ_LEN = 12
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -74,10 +75,10 @@ def setup_training(self):
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     if USE_EPISODE_MEMORY:
-        self.memory = ReplayMemorySameEpisode(300000, 12)
+        self.memory = ReplayMemorySameEpisode(300000, SEQ_LEN)
         self.memory.start_episode()
     else:
-        self.memory = ReplayMemory(300000, 12)
+        self.memory = ReplayMemory(300000, SEQ_LEN)
 
     self.total_reward_history = []
     self.total_steps_done_history = []
@@ -485,7 +486,10 @@ def calc_bomb_distance(game_state: dict):
 def optimize_model_depr(self):
     if len(self.memory) <= BATCH_SIZE:
         return
-    transitions = self.memory.sample(BATCH_SIZE)
+    if USE_EPISODE_MEMORY:
+        transitions = self.memory.sample(BATCH_SIZE, SEQ_LEN)
+    else:
+        transitions = self.memory.sample(BATCH_SIZE)
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements

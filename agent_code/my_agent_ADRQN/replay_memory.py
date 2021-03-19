@@ -102,19 +102,19 @@ class ReplayMemorySameEpisode(object):
                     last_act, last_obs, act, rew, obs, done = zip(
                         *self.storage[episode_idx][start_idx:start_idx + seq_len])
                     last_actions.append(list(last_act))
-                    last_observations.append(last_obs)
+                    last_observations.append(torch.cat(list(last_obs)))
                     actions.append(list(act))
                     rewards.append(list(rew))
-                    observations.append(list(obs))
+                    observations.append(torch.cat(list(obs)))
                     dones.append(list(done))
                     break
                 else:
                     too_short_episodes.append(episode_idx)
 
             too_short_episodes = too_short_episodes.sort(reverse=True)
-            for idx in set(too_short_episodes):
-                self.storage[idx].pop(idx)
-
+            if too_short_episodes != None:
+                for idx in set(too_short_episodes):
+                    self.storage[idx].pop(idx)
         return torch.tensor(last_actions).to(device), \
                torch.stack(last_observations).permute(0, 2, 1, 3, 4), \
                torch.tensor(actions).to(device), \

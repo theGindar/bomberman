@@ -110,9 +110,10 @@ class ReplayMemorySameEpisode(object):
                     break
                 else:
                     too_short_episodes.append(episode_idx)
-                    too_short_episodes.sort(reverse=True)
-                    for idx in too_short_episodes:
-                        self.storage[idx].pop(idx)
+
+            too_short_episodes = too_short_episodes.sort(reverse=True)
+            for idx in set(too_short_episodes):
+                self.storage[idx].pop(idx)
 
         return torch.tensor(last_actions).to(device), \
                torch.stack(last_observations).permute(0, 2, 1, 3, 4), \

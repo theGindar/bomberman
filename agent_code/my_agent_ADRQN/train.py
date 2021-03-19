@@ -538,7 +538,11 @@ def optimize_model_depr(self):
 def optimize_model(self):
     if len(self.memory) <= BATCH_SIZE:
         return
-    last_actions, last_observations, actions, rewards, observations, dones = self.memory.sample(BATCH_SIZE)
+
+    if USE_EPISODE_MEMORY:
+        last_actions, last_observations, actions, rewards, observations, dones = self.memory.sample(BATCH_SIZE)
+    else:
+        last_actions, last_observations, actions, rewards, observations, dones = self.memory.sample(BATCH_SIZE, SEQ_LEN)
 
     # Pass the sequence of last observations and actions through the network
     q_values, _ = policy_net.forward(last_observations, F.one_hot(last_actions, 6).float())

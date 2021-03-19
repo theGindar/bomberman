@@ -9,7 +9,7 @@ import events as e
 import copy
 from .model import Model
 from .utils import state_to_features, save_rewards_to_file, save_num_steps_to_file
-from .replay_memory import ReplayMemory
+from .replay_memory import ReplayMemory, ReplayMemorySameEpisode
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
@@ -37,6 +37,8 @@ GAMMA = 0.99
 TARGET_UPDATE = 20
 NUM_EPISODES = 1000
 LEARNING_RATE = 0.0001
+
+USE_EPISODE_MEMORY = True
 
 target_net = Model().to(device)
 policy_net = Model().to(device)
@@ -71,7 +73,12 @@ def setup_training(self):
     self.total_reward = 0
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
-    self.memory = ReplayMemory(300000, 12)
+    if USE_EPISODE_MEMORY:
+        self.memory = ReplayMemorySameEpisode(300000, 12)
+        self.memory.start_episode()
+    else:
+        self.memory = ReplayMemory(300000, 12)
+
     self.total_reward_history = []
     self.total_steps_done_history = []
     #self.loss_history = []
@@ -226,6 +233,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
     print(f'Number of steps: {self.steps_done}')
     self.steps_done = 0
+    if USE_EPISODE_MEMORY:
+        self.memory.start_episode()
 
 def reward_from_events(self, events: List[str], distance_coin, distance_bomb, game_state: dict) -> int:
     """

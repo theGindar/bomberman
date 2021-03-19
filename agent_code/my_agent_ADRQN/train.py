@@ -305,7 +305,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'maxreward: {max_reward}')
 
     reward_sum = (reward_sum - min_reward) / (max_reward-min_reward)
-    #print(f'Reward {reward_sum}')
+    print(f'Reward: {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

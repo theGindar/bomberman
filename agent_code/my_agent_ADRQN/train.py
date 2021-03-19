@@ -75,10 +75,10 @@ def setup_training(self):
 
     #self.optimizer = optim.RMSprop(policy_net.parameters())
     if USE_EPISODE_MEMORY:
-        self.memory = ReplayMemorySameEpisode(300000, SEQ_LEN)
+        self.memory = ReplayMemorySameEpisode(400000, SEQ_LEN)
         self.memory.start_episode()
     else:
-        self.memory = ReplayMemory(300000, SEQ_LEN)
+        self.memory = ReplayMemory(400000, SEQ_LEN)
 
     self.total_reward_history = []
     self.total_steps_done_history = []

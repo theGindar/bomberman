@@ -212,7 +212,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
     print(f'TOTAL REWARD: {self.total_reward}')
-    print(f'steps done: {self.steps_done}')
+    #print(f'steps done: {self.steps_done}')
 
 
 
@@ -246,9 +246,9 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
         e.WAITED: 0,
-        e.BOMB_DROPPED: 3000,
+        e.BOMB_DROPPED: 5000,
         e.IN_BOMB_RANGE: -20,
-        e.KILLED_SELF: -1000,
+        e.KILLED_SELF: -500,
         e.CRATE_DESTROYED: 500
         #e.REPEATS_STEPS: -20
     }
@@ -262,7 +262,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         if event in game_rewards:
             reward_sum += game_rewards[event]
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
-    print(f'Reward from events: {reward_sum}')
+    #print(f'Reward from events: {reward_sum}')
     #set reward for the coin distance
     if len(game_state['coins']) != 0:
         reward_sum += int(100 - distance_coin * 100)
@@ -270,8 +270,8 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #set reward for the bomb distance
     for event in events:
         if event == e.IN_BOMB_RANGE:
-            reward_sum += int(distance_bomb*500 - 100)
-    print(f'Reward bomb distance: {reward_sum}')
+            reward_sum += int(distance_bomb*1000 - 100)
+    #print(f'Reward bomb distance: {reward_sum}')
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
     if 'BOMB_DROPPED' in events:
@@ -279,24 +279,24 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
             if corner == game_state['self'][3]:
                 reward_sum -= 2000
 
-    print(f'Reward corners: {reward_sum}')
+    #print(f'Reward corners: {reward_sum}')
     # set reward for destroyed crates
-    reward_sum += self.n_destroyed_crates * 300
+    reward_sum += self.n_destroyed_crates * 500
     self.n_destroyed_crates = 0
-    print(f'Reward destroyed crates: {reward_sum}')
+    #print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward
-    max_reward = 3000
+    max_reward = -2000
     min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:
             max_reward += value
         else:
             min_reward += value
-    print(f'minreward: {min_reward}')
-    print(f'maxreward: {max_reward}')
+    #print(f'minreward: {min_reward}')
+    #print(f'maxreward: {max_reward}')
 
     reward_sum = (reward_sum - min_reward) / (max_reward-min_reward)
-    print(f'Reward {reward_sum}')
+    #print(f'Reward {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

@@ -52,7 +52,7 @@ def act(self, game_state: dict) -> str:
     #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
-    random_threshold = .3
+    random_threshold = .2
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_done / EPS_DECAY)
     self.steps_done += 1

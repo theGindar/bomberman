@@ -34,11 +34,12 @@ ACTIONS = { 'UP': 0,
 
 BATCH_SIZE = 64
 GAMMA = 0.99
-TARGET_UPDATE = 20
+TARGET_UPDATE = 30
+print(f'target update: {TARGET_UPDATE}')
 NUM_EPISODES = 2000
 LEARNING_RATE = 0.0001
 
-USE_EPISODE_MEMORY = True
+USE_EPISODE_MEMORY = False
 SEQ_LEN = 12
 
 target_net = Model().to(device)

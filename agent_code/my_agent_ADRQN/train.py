@@ -126,7 +126,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         events.append('IN_BOMB_RANGE')
 
     reward = reward_from_events(self, events, min_coin_distance, min_bomb_distance, new_game_state)
-
     
     self.total_reward += reward
     reward = torch.tensor([reward], device=device)
@@ -258,10 +257,11 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         e.WAITED: 0,
         e.BOMB_DROPPED: 5000,
         e.IN_BOMB_RANGE: -20,
-        e.KILLED_SELF: -500,
-        e.CRATE_DESTROYED: 1000
+        e.KILLED_SELF: -1500,
+        #e.CRATE_DESTROYED: 1000
         #e.REPEATS_STEPS: -20
     }
+
 
     for i in events:
         if i == e.REPEATS_STEPS:
@@ -280,22 +280,27 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #set reward for the bomb distance
     for event in events:
         if event == e.IN_BOMB_RANGE:
-            reward_sum += int(distance_bomb*1000 - 100)
+            # ca. distance for one step: 0.046
+            # ca. distance for two steps: 0.093
+            reward_sum += int((distance_bomb*27.73*1000-4000)/4)
     #print(f'Reward bomb distance: {reward_sum}')
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
     if 'BOMB_DROPPED' in events:
         for corner in corners:
             if corner == game_state['self'][3]:
-                reward_sum -= 2000
+                reward_sum -= 8000
 
     #print(f'Reward corners: {reward_sum}')
     # set reward for destroyed crates
-    reward_sum += self.n_destroyed_crates * 1000
+
+    # only give additional crate reward if agent did not kill himself
+    if e.KILLED_SELF not in events:
+        reward_sum += self.n_destroyed_crates * 1000
     self.n_destroyed_crates = 0
     #print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward
-    max_reward = -1500
+    max_reward = -500
     min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:

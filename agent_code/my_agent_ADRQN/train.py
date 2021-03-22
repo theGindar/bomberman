@@ -70,7 +70,6 @@ def setup_training(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
     print('setup training called')
-    self.steps_done = 0
     self.current_episode_num = 1
     self.total_reward = 0
 
@@ -213,7 +212,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     
     self.total_reward_history.append(self.total_reward)
-    self.total_steps_done_history.append(self.steps_done)
+    self.total_steps_done_history.append(last_game_state['step'])
     if self.current_episode_num == NUM_EPISODES:
         print(f"saving model...{self.current_episode_num}")
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
@@ -232,8 +231,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.positions = []
     self.last_action = 4
     agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
-    print(f'Number of steps: {self.steps_done}')
-    self.steps_done = 0
+    steps = last_game_state['step']
+    print(f'Number of steps: {steps}')
     if USE_EPISODE_MEMORY:
         self.memory.start_episode()
 

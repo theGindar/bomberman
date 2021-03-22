@@ -5,5 +5,5 @@ if torch.cuda.is_available():
     print(f'current device: {torch.cuda.get_device_name(torch.cuda.current_device())}')
 
 EPS_START = 0.4
-EPS_END = 0.05
-EPS_DECAY = 50
+EPS_END = 0.1
+EPS_DECAY = 10

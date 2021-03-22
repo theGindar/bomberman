@@ -30,7 +30,7 @@ def setup(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-    self.steps_done = 0
+    self.steps_count = 0
     if self.train:
         print('train is true')
         #setup_training(self)
@@ -48,18 +48,22 @@ def act(self, game_state: dict) -> str:
     :param game_state: The dictionary that describes everything on the board.
     :return: The action to take as a string.
     """
+    if game_state['step'] == 1:
+        agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
+
     features = state_to_features(game_state)
     #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
     random_threshold = .2
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * self.steps_done / EPS_DECAY)
-    self.steps_done += 1
+        math.exp(-1. * self.steps_count / EPS_DECAY)
+    self.steps_count += 1
     action, agent_code.my_agent_ADRQN.global_model_variables.hidden_s = \
         policy_net.act(torch.unsqueeze(features.to(device), 2),
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
+    print(f'Threshold: {eps_threshold}')
     if sample > eps_threshold:
         #print('agent called')
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
@@ -88,10 +92,10 @@ def act(self, game_state: dict) -> str:
     #print(f'execution time: {end-start}')
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
-    if self.steps_done == 400:
+    if game_state['step'] % 50 == 0:
         # todo problem: wenn weniger als 400 steps wird es nicht zurückgesetzt...
-        self.steps_done = 0
-        agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
+        self.steps_count = 0
+        #agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
     return ACTIONS[action]
 
 

@@ -35,7 +35,7 @@ ACTIONS = { 'UP': 0,
 BATCH_SIZE = 64
 GAMMA = 0.99
 TARGET_UPDATE = 30
-print(f'target update: {TARGET_UPDATE}')
+#print(f'target update: {TARGET_UPDATE}')
 NUM_EPISODES = 2000
 LEARNING_RATE = 0.0001
 
@@ -295,9 +295,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'Reward corners: {reward_sum}')
     # set reward for destroyed crates
 
-    # only give additional crate reward if agent did not kill himself
-    if e.KILLED_SELF not in events:
-        reward_sum += self.n_destroyed_crates * 1000
+    reward_sum += self.n_destroyed_crates * 1000
     self.n_destroyed_crates = 0
     #print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward

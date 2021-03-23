@@ -247,17 +247,17 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     distance_coin: distance of agent to the nearest coin
     """
     game_rewards = {
-        e.COIN_COLLECTED: 4000,
+        e.COIN_COLLECTED: 6000,
         e.KILLED_OPPONENT: 0,
-        e.INVALID_ACTION: -10,
+        e.INVALID_ACTION: -500,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: 0,
-        e.BOMB_DROPPED: 5000,
-        e.IN_BOMB_RANGE: -20,
-        e.KILLED_SELF: -1500,
+        e.WAITED: -500,
+        e.BOMB_DROPPED: 10000,
+        e.IN_BOMB_RANGE: -30,
+        e.KILLED_SELF: -2000,
         #e.CRATE_DESTROYED: 1000
         #e.REPEATS_STEPS: -20
     }
@@ -275,7 +275,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'Reward from events: {reward_sum}')
     #set reward for the coin distance
     if len(game_state['coins']) != 0:
-        reward_sum += int(100 - distance_coin * 100)
+        reward_sum += int(1000 - distance_coin * 1000)
 
     #set reward for the bomb distance
     for event in events:
@@ -294,7 +294,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'Reward corners: {reward_sum}')
     # set reward for destroyed crates
 
-    reward_sum += self.n_destroyed_crates * 1000
+    reward_sum += self.n_destroyed_crates * 2000
     self.n_destroyed_crates = 0
     #print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward

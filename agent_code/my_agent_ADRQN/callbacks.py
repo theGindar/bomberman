@@ -64,15 +64,15 @@ def act(self, game_state: dict) -> str:
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
     #print(f'Threshold: {eps_threshold}')
-    if sample > eps_threshold:
+    if sample > random_threshold:
         #print('agent called')
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         #print(f'action chosen: {action}')
             
     else:
-        # action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
 
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action

@@ -218,7 +218,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
-    print(f'TOTAL REWARD: {self.total_reward}')
+    #print(f'TOTAL REWARD: {self.total_reward}')
     #print(f'steps done: {self.steps_done}')
 
 
@@ -246,27 +246,23 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     events: list of events
     distance_coin: distance of agent to the nearest coin
     """
+    #print(f'Events: {events}')
     game_rewards = {
         e.COIN_COLLECTED: 6000,
         e.KILLED_OPPONENT: 0,
-        e.INVALID_ACTION: -500,
+        e.INVALID_ACTION: -1000,
         e.MOVED_DOWN: 0,
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
         e.WAITED: -500,
-        e.BOMB_DROPPED: 10000,
+        e.BOMB_DROPPED: 15000,
         e.IN_BOMB_RANGE: -30,
         e.KILLED_SELF: -2000,
         #e.CRATE_DESTROYED: 1000
-        #e.REPEATS_STEPS: -20
+        e.REPEATS_STEPS: -5000
     }
 
-
-    for i in events:
-        if i == e.REPEATS_STEPS:
-            #("step repeated!")
-            pass
     reward_sum = 0
     for event in events:
         if event in game_rewards:
@@ -547,6 +543,7 @@ def optimize_model(self):
     else:
         last_actions, last_observations, actions, rewards, observations, dones = self.memory.sample(BATCH_SIZE)
 
+    #print(f'Rewards: {rewards}')
     # Pass the sequence of last observations and actions through the network
     q_values, _ = policy_net.forward(last_observations, F.one_hot(last_actions, 6).float())
     # Get the q_values for the executed actions in the respective observations

@@ -71,12 +71,14 @@ def act(self, game_state: dict) -> str:
             
     else:
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
+        
         for i in range(50):
             action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
-            print(f'action chosen: {action}')
+            #print(f'action chosen: {action}')
             if check_validity(game_state, action):
-                print(f'action was valid!')
+                #print(f'action was valid!')
                 break
+
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action

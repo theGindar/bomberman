@@ -32,12 +32,12 @@ ACTIONS = { 'UP': 0,
 #TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
-BATCH_SIZE = 64
-GAMMA = 0.9
-TARGET_UPDATE = 20
+BATCH_SIZE = 128
+GAMMA = 0.999
+TARGET_UPDATE = 30
 #print(f'target update: {TARGET_UPDATE}')
 NUM_EPISODES = 2000
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.0005
 
 USE_EPISODE_MEMORY = False
 SEQ_LEN = 12

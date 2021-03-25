@@ -33,7 +33,7 @@ ACTIONS = { 'UP': 0,
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
 BATCH_SIZE = 64
-GAMMA = 0.99
+GAMMA = 0.9
 TARGET_UPDATE = 30
 #print(f'target update: {TARGET_UPDATE}')
 NUM_EPISODES = 2000
@@ -255,12 +255,12 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         e.MOVED_LEFT: 0,
         e.MOVED_RIGHT: 0,
         e.MOVED_UP: 0,
-        e.WAITED: -500,
+        e.WAITED: -1000,
         e.BOMB_DROPPED: 15000,
         e.IN_BOMB_RANGE: -30,
         e.KILLED_SELF: -2000,
         #e.CRATE_DESTROYED: 1000
-        e.REPEATS_STEPS: -5000
+        #e.REPEATS_STEPS: -5000
     }
 
     reward_sum = 0

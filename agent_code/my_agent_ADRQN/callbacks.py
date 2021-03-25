@@ -55,7 +55,7 @@ def act(self, game_state: dict) -> str:
     #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
-    random_threshold = .2
+    random_threshold = 0.2
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_count / EPS_DECAY)
     self.steps_count += 1
@@ -64,15 +64,19 @@ def act(self, game_state: dict) -> str:
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
     #print(f'Threshold: {eps_threshold}')
-    if sample > random_threshold:
+    if sample > eps_threshold:
         #print('agent called')
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         #print(f'action chosen: {action}')
             
     else:
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
-
-        action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .0, .2])]], device=device, dtype=torch.long)
+        for i in range(50):
+            action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
+            print(f'action chosen: {action}')
+            if check_validity(game_state, action):
+                print(f'action was valid!')
+                break
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
         agent_code.my_agent_ADRQN.global_model_variables.last_action = action
@@ -99,5 +103,29 @@ def act(self, game_state: dict) -> str:
     return ACTIONS[action]
 
 
+def check_validity(game_state, action):
+    valid = True
+    can_place_bomb = game_state['self'][2]
+    agent_position = game_state['self'][3]
 
-
+    if action == 0:
+        # up
+        if game_state['field'][agent_position[0], agent_position[1]-1] != 0:
+            valid = False
+    elif action == 1:
+        # right
+        if game_state['field'][agent_position[0]+1, agent_position[1]] != 0:
+            valid = False
+    elif action == 2:
+        # down
+        if game_state['field'][agent_position[0], agent_position[1]+1] != 0:
+            valid = False
+    elif action == 3:
+        # left
+        if game_state['field'][agent_position[0]-1, agent_position[1]] != 0:
+            valid = False
+    elif action == 5:
+        # bomb
+        if not can_place_bomb:
+            valid = False
+    return valid

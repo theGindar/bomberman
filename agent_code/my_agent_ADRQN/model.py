@@ -43,5 +43,6 @@ class Model(nn.Module):
 
     def act(self, observation, last_action, hidden=None):
         q_values, hidden_out = self.forward(observation, last_action, hidden)
-        action = torch.argmax(q_values).item()
-        return action, hidden_out
+        #print(q_values)
+        # action = torch.argmax(q_values).item()
+        return q_values, hidden_out

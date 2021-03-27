@@ -278,7 +278,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
         if event == e.IN_BOMB_RANGE:
             # ca. distance for one step: 0.046
             # ca. distance for two steps: 0.093
-            reward_sum += int((distance_bomb*27.73*1000-4000)/4)
+            reward_sum += int((distance_bomb*27.73*1000-4000)/2)
     #print(f'Reward bomb distance: {reward_sum}')
     # no bombs in corners
     corners = [(1, 1), (1, 15), (15, 15), (15, 1)]
@@ -294,7 +294,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     self.n_destroyed_crates = 0
     #print(f'Reward destroyed crates: {reward_sum}')
     # normalize the calculated reward
-    max_reward = -500
+    max_reward = 3500
     min_reward = -2100
     for key, value in game_rewards.items():
         if value > 0:

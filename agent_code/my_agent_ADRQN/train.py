@@ -248,7 +248,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     """
     #print(f'Events: {events}')
     game_rewards = {
-        e.COIN_COLLECTED: 6000,
+        e.COIN_COLLECTED: 10000,
         e.KILLED_OPPONENT: 0,
         e.INVALID_ACTION: -1000,
         e.MOVED_DOWN: 0,
@@ -271,7 +271,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'Reward from events: {reward_sum}')
     #set reward for the coin distance
     if len(game_state['coins']) != 0:
-        reward_sum += int(1000 - distance_coin * 1000)
+        reward_sum += int(4000 - distance_coin * 4000)
 
     #set reward for the bomb distance
     for event in events:
@@ -305,7 +305,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'maxreward: {max_reward}')
 
     reward_sum = (reward_sum - min_reward) / (max_reward-min_reward) * 3
-    #print(f'Reward: {reward_sum}')
+    print(f'Reward: {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

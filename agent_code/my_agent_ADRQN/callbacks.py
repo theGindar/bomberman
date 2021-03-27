@@ -66,7 +66,7 @@ def act(self, game_state: dict) -> str:
 
     for i in range(6):
         action = torch.argmax(q_values).item()
-
+        break
         if check_validity(game_state, action):
             break
         else:

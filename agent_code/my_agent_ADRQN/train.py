@@ -33,7 +33,7 @@ ACTIONS = { 'UP': 0,
 #RECORD_ENEMY_TRANSITIONS = 1.0  # record enemy transitions with probability ...!!!!!!!!!!!!!!!!!!!!!!!
 
 BATCH_SIZE = 64
-GAMMA = 0.99
+GAMMA = 0.999
 TARGET_UPDATE = 30
 #print(f'target update: {TARGET_UPDATE}')
 NUM_EPISODES = 2000
@@ -218,7 +218,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         torch.save(target_net.state_dict(), "./saved_models/krasses_model.pt")
         save_rewards_to_file(self.total_reward_history)
         #save_loss_to_file(self.loss_history)
-    #print(f'TOTAL REWARD: {self.total_reward}')
+    print(f'TOTAL REWARD: {self.total_reward}')
     #print(f'steps done: {self.steps_done}')
 
 
@@ -305,7 +305,7 @@ def reward_from_events(self, events: List[str], distance_coin, distance_bomb, ga
     #print(f'maxreward: {max_reward}')
 
     reward_sum = (reward_sum - min_reward) / (max_reward-min_reward) * 3
-    print(f'Reward: {reward_sum}')
+    #print(f'Reward: {reward_sum}')
     return reward_sum
 
 def calc_coin_distance(game_state: dict):

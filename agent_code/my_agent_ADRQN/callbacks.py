@@ -64,13 +64,13 @@ def act(self, game_state: dict) -> str:
                        F.one_hot(torch.tensor(agent_code.my_agent_ADRQN.global_model_variables.last_action), 6).view(1,1,-1).float().to(device),
                        hidden=agent_code.my_agent_ADRQN.global_model_variables.hidden_s)
 
-    for i in range(6):
-        action = torch.argmax(q_values).item()
-        break
-        if check_validity(game_state, action):
-            break
-        else:
-            q_values[0][0][torch.argmax(q_values)] = 0.0
+    #for i in range(6):
+    action = torch.argmax(q_values).item()
+        #break
+        #if check_validity(game_state, action):
+        #    break
+        #else:
+        #    q_values[0][0][torch.argmax(q_values)] = 0.0
 
     #print(f'Threshold: {eps_threshold}')
     if sample > eps_threshold:

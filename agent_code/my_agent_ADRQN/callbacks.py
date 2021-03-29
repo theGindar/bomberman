@@ -39,7 +39,7 @@ def setup(self):
     #self.policy_net = policy_net
 
 def act(self, game_state: dict) -> str:
-    start = time.time()
+    #start = time.time()
     """
     Your agent should parse the input, think, and take a decision.
     When not in training mode, the maximum execution time for this method is 0.5s.
@@ -55,7 +55,7 @@ def act(self, game_state: dict) -> str:
     #print(f'steps_done in act: {self.steps_done}')
     
     sample = random.random()
-    random_threshold = 0.
+    random_threshold = 0.05
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * self.steps_count / EPS_DECAY)
     self.steps_count += 1
@@ -73,24 +73,12 @@ def act(self, game_state: dict) -> str:
         #    q_values[0][0][torch.argmax(q_values)] = 0.0
 
     #print(f'Threshold: {eps_threshold}')
-    if sample > eps_threshold:
-        #print('agent called')
-        agent_code.my_agent_ADRQN.global_model_variables.last_action = action
-        #print(f'action chosen: {action}')
-            
-    else:
-        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.225, .225, .225, .225, .1, .0])]], device=device, dtype=torch.long)
-
-        for i in range(50):
-            action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
-            #print(f'action chosen: {action}')
-            if check_validity(game_state, action):
-                #print(f'action was valid!')
-                break
-
+    if (sample < random_threshold) and check_validity(game_state, torch.tensor([[5]])):
+        #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.175, .175, .175, .175, .1, .2])]], device=device, dtype=torch.long)
+        action = torch.tensor([[5]])
         #action = torch.tensor([[np.random.choice(ACTION_NUMBERS, p=[.2, .2, .2, .2, .1, .1])]], device=device, dtype=torch.long)
 
-        agent_code.my_agent_ADRQN.global_model_variables.last_action = action
+    agent_code.my_agent_ADRQN.global_model_variables.last_action = action
         # action = policy_net(features.to(device)).max(1)[1].view(1, 1)
 
     #print(f'steps done: {self.steps_done}')
@@ -111,8 +99,8 @@ def act(self, game_state: dict) -> str:
         # todo problem: wenn weniger als 400 steps wird es nicht zurückgesetzt...
         self.steps_count = 0
         #agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
-    end = time.time()
-    print(end-start)
+    #end = time.time()
+    #print(end-start)
     return ACTIONS[action]
 
 
@@ -140,5 +128,7 @@ def check_validity(game_state, action):
     elif action == 5:
         # bomb
         if not can_place_bomb:
+            valid = False
+        if agent_position == (1,1) or agent_position == (1,15) or agent_position == (15,15) or agent_position == (15,1):
             valid = False
     return valid

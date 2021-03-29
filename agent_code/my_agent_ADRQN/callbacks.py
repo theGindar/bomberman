@@ -103,7 +103,7 @@ def act(self, game_state: dict) -> str:
     #    self.logger.debug("Choosing action purely at random.")
     #    # 80%: walk in any direction. 10% wait. 10% bomb.
     #    return np.random.choice(ACTIONS, p=[.2, .2, .2, .2, .1, .1])
-    end = time.time()
+
     #print(f'execution time: {end-start}')
     #self.logger.debug("Querying model for action.")
     #return np.random.choice(ACTIONS, p=self.model)
@@ -111,6 +111,8 @@ def act(self, game_state: dict) -> str:
         # todo problem: wenn weniger als 400 steps wird es nicht zurückgesetzt...
         self.steps_count = 0
         #agent_code.my_agent_ADRQN.global_model_variables.last_action = 4
+    end = time.time()
+    print(end-start)
     return ACTIONS[action]
 
 
